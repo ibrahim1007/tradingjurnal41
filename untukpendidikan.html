@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untuk Pendidikan - LEODRA</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- GLOBAL SETTINGS --- */
+        html, body { overflow-x: hidden; width: 100%; }
+        html { font-size: 14px; scroll-padding-top: 120px; }
+        @media (min-width: 1024px) { 
+            body { zoom: 0.85; -moz-transform: scale(0.85); -moz-transform-origin: top center; }
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #0f0f0f; -webkit-font-smoothing: antialiased; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        /* Mobile Nav Styles */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 100px; z-index: 999; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); background: rgba(255,255,255,0.98); }
+        .mobile-nav-overlay.open { transform: translateX(0); }
+        .mobile-nav-overlay ul { list-style: none; padding: 0; margin-top: 1rem; width: 100%; }
+        .mobile-nav-overlay ul li { margin: 0; opacity: 0; transform: translateY(20px); transition: 0.5s ease; } 
+        .mobile-nav-overlay.open ul li { opacity: 1; transform: translateY(0); }
+
+        /* COMPONENTS */
+        .btn-primary { background: #000; color: #fff; padding: 1rem 2rem; border-radius: 0; font-weight: 500; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.85rem; text-align: center; }
+        .btn-primary:hover { background: #222; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+
+        /* SHARP EDGES OVERRIDE */
+        .rounded, .rounded-sm, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-full { border-radius: 0 !important; }
+        .w-2\.h-2, .w-1\.5\.h-1\.5, .wa-circle, .circle-icon { border-radius: 9999px !important; }
+        .wa-tooltip { border-radius: 0.5rem !important; }
+
+        /* APPLE STYLE MEGA MENU */
+        .nav-overlay { position: fixed; inset: 0; top: 80px; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        @media (min-width: 768px) { .nav-overlay { top: 96px; } }
+        .nav-overlay.open { opacity: 1; pointer-events: auto; }
+        .mega-menu-container { position: absolute; top: 100%; left: 0; width: 100%; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); overflow: hidden; max-height: 0; opacity: 0; border-bottom: 1px solid transparent; transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, border-color 0.4s ease; }
+        .mega-menu-container.open { max-height: 500px; opacity: 1; border-bottom-color: #e5e5e5; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+        /* Custom Animations & SVG Styles */
+        .fade-in-up { opacity: 0; transform: translateY(20px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade-in-up.visible { opacity: 1; transform: translateY(0); }
+        .bar-fill { width: 0; transition: width 2s cubic-bezier(0.22, 1, 0.36, 1); }
+        .bar-fill.visible { width: var(--target-width); }
+        .root-path { stroke-dasharray: 1000; stroke-dashoffset: 1000; transition: stroke-dashoffset 3s ease-in-out; }
+        .root-path.visible { stroke-dashoffset: 0; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-white text-gray-900">
+
+    <!-- Mobile Navigation Overlay -->
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay md:hidden bg-white/95 backdrop-blur-xl overflow-y-auto">
+        <button class="absolute top-6 right-6 cursor-pointer text-black text-4xl hover:rotate-90 transition duration-300" onclick="toggleMobileMenu()">&times;</button>
+        <div class="w-full px-8 pb-12 mt-4 max-w-sm mx-auto">
+            <ul class="flex flex-col w-full text-left">
+                <!-- Tambahan Menu Home Sesuai Permintaan -->
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-home')">
+                        Home <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-home"></i>
+                    </button>
+                    <div id="mobile-home" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="index.html" class="block hover:text-black font-light">Halaman awal</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-solusi')">
+                        Solusi <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-solusi"></i>
+                    </button>
+                    <!-- Terbuka secara default karena halaman aktif -->
+                    <div id="mobile-solusi" class="flex flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="belajardanmenghasilkan.html" class="block hover:text-black font-light">Belajar dan menghasilkan</a>
+                        <a href="untukbisnis.html" class="block hover:text-black font-light">Untuk bisnis</a>
+                        <!-- Highlight Aktif -->
+                        <a href="untukpendidikan.html" class="block font-medium text-black border-l-2 border-black pl-2">Untuk pendidikan</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-perusahaan')">
+                        Perusahaan <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-perusahaan"></i>
+                    </button>
+                    <div id="mobile-perusahaan" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="tentangleodra.html" class="block hover:text-black font-light">Tentang Leodra</a>
+                        <a href="visimisi.html" class="block hover:text-black font-light">Visi & Misi</a>
+                        <a href="nilainilaileodra.html" class="block hover:text-black font-light">Nilai - nilai Leodra</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-bantuan')">
+                        Bantuan <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-bantuan"></i>
+                    </button>
+                    <div id="mobile-bantuan" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="pusatbantuanumum.html" class="block hover:text-black font-light">Pusat Bantuan Umum</a>
+                    </div>
+                </li>
+                <!-- Bagian Data Menu Sesuai Permintaan -->
+                <li class="border-b border-gray-200"><a href="#vision" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Prinsip Dasar</a></li>
+                <li class="border-b border-gray-200"><a href="#stats" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Fakta Pasar</a></li>
+                <li class="border-b border-gray-200"><a href="#prob" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Sistem</a></li>
+            </ul>
+            <div class="mt-8"><a href="login.html" class="bg-black text-white px-8 w-full h-12 flex items-center justify-center rounded-none text-base font-light hover:bg-gray-800 transition">Masuk</a></div>
+        </div>
+    </div>
+
+    <!-- APPLE STYLE OVERLAY -->
+    <div id="nav-overlay" class="nav-overlay"></div>
+
+    <!-- HEADER UTAMA -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full pl-4 md:pl-8 pr-4 md:pr-0 flex items-center justify-between gap-2">
+            <div class="flex items-center h-full">
+                <div class="flex items-center flex-shrink-0">
+                    <a href="index.html" class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather hover:text-gray-700 transition">LEODRA</a>
+                </div>
+            </div>
+            <button class="md:hidden p-2 text-black" onclick="toggleMobileMenu()"><i data-lucide="menu" class="w-6 h-6"></i></button>
+            <div class="hidden md:flex items-center justify-end flex-shrink-0 gap-4 lg:gap-6 h-full">
+                <nav class="flex items-center gap-4 lg:gap-6 text-sm lg:text-base text-slate-800 font-normal h-full">
+                    <!-- Tambahan Menu Home di samping kiri Solusi -->
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="home">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Home</span>
+                    </div>
+                    <!-- Class is-active diberikan pada 'Solusi' untuk penanda halaman ini -->
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="solusi">
+                        <span class="nav-link py-1 border-b-[3px] border-black text-black transition cursor-default is-active font-normal">Solusi</span>
+                    </div>
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="perusahaan">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Perusahaan</span>
+                    </div>
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="bantuan">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Bantuan</span>
+                    </div>
+                    <a href="index.html#vision" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Prinsip Dasar</a>
+                    <a href="index.html#stats" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Fakta Pasar</a>
+                    <a href="index.html#prob" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Sistem</a>
+                </nav>
+                <div class="w-px h-6 bg-gray-300"></div>
+                <span id="headerRealTimeDate" class="text-slate-800 text-sm lg:text-base font-normal whitespace-nowrap" style="font-family: 'Inter', sans-serif;">-- -- ----</span>
+                <a href="login.html" class="bg-black text-white px-6 lg:px-10 h-full flex items-center justify-center rounded-none text-sm lg:text-base font-light hover:bg-gray-800 transition-all whitespace-nowrap border-b-[3px] border-transparent hover:border-white">Masuk</a>
+            </div>
+        </div>
+        <div id="mega-menu" class="mega-menu-container">
+            <div class="max-w-[1400px] mx-auto px-6 md:px-12 py-10 transition-opacity duration-300 opacity-0" id="mega-menu-content"></div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow pt-20 md:pt-24 flex flex-col bg-white">
+        
+        <!-- BREADCRUMB -->
+        <div class="w-full px-6 md:px-12 py-3 bg-white border-b border-gray-100 shadow-sm z-30 relative">
+            <p class="text-[10px] md:text-xs text-gray-500 font-mono tracking-widest uppercase flex items-center gap-2">
+                <span>Solusi</span> <i data-lucide="chevron-right" class="w-3 h-3 text-gray-300"></i> <span class="text-black font-normal">Untuk pendidikan</span>
+            </p>
+        </div>
+
+        <!-- HERO SECTION -->
+        <section class="max-w-[1400px] mx-auto w-full px-6 md:px-12 py-16 md:py-24 fade-in-up">
+            <div class="max-w-4xl">
+                <span class="text-amber-600 font-normal tracking-[0.3em] uppercase mb-4 block text-[10px] md:text-sm border-l-2 border-amber-600 pl-3">Akselerasi Edukasi Kelas Institusi</span>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-sans tracking-tight mb-8 leading-tight text-black font-light">
+                    Pangkas Kurva Belajar <br>
+                    <span class="text-gray-400">Anda Bersama Kami.</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-600 leading-relaxed font-light mb-10">
+                    Banyak trader menghabiskan waktu bertahun-tahun dalam kebingungan dan kerugian (trial-and-error). Di LEODRA, kami mendesain kurikulum yang sederhana namun mematikan efektivitasnya. <span class="font-normal text-black">Apa yang normalnya dipelajari dalam 5 tahun, akan Anda kuasai pondasinya secara matang hanya dalam 1 hingga 2 tahun.</span>
+                </p>
+            </div>
+        </section>
+
+        <!-- STATISTIK WAKTU BELAJAR -->
+        <section class="py-16 md:py-24 bg-gray-50 border-y border-gray-200">
+            <div class="max-w-[1200px] mx-auto px-6 md:px-12">
+                <div class="text-center mb-12 fade-in-up">
+                    <h2 class="text-3xl font-sans tracking-tight mb-4 font-light">Perbandingan Waktu Menuju Kematangan</h2>
+                    <p class="text-gray-500 font-light">Bukan tentang jalan pintas, tapi tentang menggunakan peta (kurikulum) yang benar.</p>
+                </div>
+
+                <div class="space-y-8 fade-in-up">
+                    <!-- Bar 1: Belajar Sendiri -->
+                    <div>
+                        <div class="flex justify-between text-sm md:text-base font-normal mb-2">
+                            <span class="text-gray-500">Belajar Sendiri (Trial & Error)</span>
+                            <span class="text-gray-500">3 - 5+ Tahun</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-8 md:h-12 relative overflow-hidden group">
+                            <div class="bar-fill absolute top-0 left-0 h-full bg-gray-400" style="--target-width: 90%;"></div>
+                            <div class="absolute inset-0 flex items-center px-4 text-xs font-mono text-white font-light z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                Fase Berdarah &raquo; Gonta-ganti Teknik &raquo; Kehilangan Modal Besar &raquo; Frustasi
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bar 2: Sistem Leodra -->
+                    <div>
+                        <div class="flex justify-between text-sm md:text-base font-normal mb-2">
+                            <span class="text-black">Sistem Edukasi LEODRA</span>
+                            <span class="text-black font-mono">1 - 2 Tahun</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-8 md:h-12 relative overflow-hidden">
+                            <!-- Lebar bar lebih pendek merepresentasikan waktu yang lebih singkat -->
+                            <div class="bar-fill absolute top-0 left-0 h-full bg-amber-500" style="--target-width: 35%;"></div>
+                            <div class="absolute inset-0 flex items-center px-4 text-xs font-mono text-black font-normal z-10">
+                                Terstruktur &raquo; Fokus Evaluasi Data &raquo; Kematangan Mental
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISUALISASI AKAR (PRINSIP MEMAHAMI VS MENGHAFAL) -->
+        <section class="py-20 md:py-32 bg-[#0a0a0a] text-white relative overflow-hidden">
+            <div class="max-w-[1200px] mx-auto px-6 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    
+                    <div class="fade-in-up">
+                        <span class="text-amber-500 font-normal tracking-[0.3em] uppercase mb-4 block text-[10px]">Filosofi Leodra</span>
+                        <h2 class="text-3xl md:text-5xl font-sans tracking-tight mb-6 leading-tight font-light">Memahami Akar, <br><span class="text-gray-400">Bukan Menghafal Daun.</span></h2>
+                        <p class="text-gray-400 leading-relaxed mb-6 font-light">
+                            Menghafal 100 pola candlestick itu seperti menghafal bentuk daun. Saat musim berganti (kondisi market berubah), daun-daun itu akan gugur dan Anda akan kebingungan.
+                        </p>
+                        <p class="text-gray-300 font-light leading-relaxed mb-8 border-l-4 border-amber-500 pl-4">
+                            Di LEODRA, kami membangun sistem pembelajaran pertama yang berfokus pada AKAR. Kami menanamkan logika: Mengapa harga bergerak? Siapa yang menggerakkannya? Bagaimana mengelola risiko saat terjadi badai?
+                        </p>
+                        <p class="text-gray-400 text-sm font-light">
+                            Jika akar Anda kuat (Psikologi, Makro Fundamental, dan Manajemen Risiko), pohon bisnis trading Anda tidak akan pernah tumbang, apapun strategi eksekusi (daun) yang Anda gunakan di atasnya.
+                        </p>
+                    </div>
+
+                    <!-- Abstract SVG Root Visualization -->
+                    <div class="relative h-[400px] flex justify-center items-center fade-in-up">
+                        <svg class="w-full h-full max-w-md" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Permukaan Tanah -->
+                            <line x1="10" y1="50" x2="190" y2="50" stroke="#333" stroke-width="2" stroke-dasharray="4 4"/>
+                            
+                            <!-- Batang Pohon (Eksekusi Market) -->
+                            <path d="M95 50 Q95 20 80 10" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M105 50 Q105 20 120 10" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="80" cy="10" r="3" fill="#888"/>
+                            <circle cx="120" cy="10" r="3" fill="#888"/>
+                            <text x="100" y="25" fill="#888" font-size="6" text-anchor="middle" font-family="monospace" font-weight="300">TEKNIKAL / DAUN</text>
+
+                            <!-- Akar Utama -->
+                            <path class="root-path" d="M100 50 L100 80" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+                            
+                            <!-- Cabang Akar (Fundamental) -->
+                            <path class="root-path" d="M100 80 Q80 110 60 140" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                            <path class="root-path" d="M60 140 Q40 160 30 180" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                            <path class="root-path" d="M60 140 Q65 160 70 170" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                            
+                            <!-- Cabang Akar (Manajemen Risiko) -->
+                            <path class="root-path" d="M100 80 Q100 120 100 150" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+                            <path class="root-path" d="M100 150 Q90 170 85 190" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+                            <path class="root-path" d="M100 150 Q110 170 115 190" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+
+                            <!-- Cabang Akar (Psikologi) -->
+                            <path class="root-path" d="M100 80 Q120 110 140 140" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                            <path class="root-path" d="M140 140 Q160 160 170 180" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                            <path class="root-path" d="M140 140 Q135 160 130 170" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+
+                            <!-- Label Akar -->
+                            <rect x="25" y="115" width="45" height="14" rx="2" fill="#222" stroke="#f59e0b" stroke-width="0.5"/>
+                            <text x="47.5" y="124" fill="#fff" font-size="5" text-anchor="middle" font-weight="300">MAKRO FUNDAMENTAL</text>
+
+                            <rect x="75" y="130" width="50" height="14" rx="2" fill="#222" stroke="#f59e0b" stroke-width="0.5"/>
+                            <text x="100" y="139" fill="#fff" font-size="5" text-anchor="middle" font-weight="300">MANAJEMEN RISIKO</text>
+
+                            <rect x="130" y="115" width="45" height="14" rx="2" fill="#222" stroke="#f59e0b" stroke-width="0.5"/>
+                            <text x="152.5" y="124" fill="#fff" font-size="5" text-anchor="middle" font-weight="300">PSIKOLOGI TRADING</text>
+                        </svg>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 10 HAL YANG ANDA DAPATKAN (DENGAN ANALOGI) -->
+        <section class="py-20 md:py-32 bg-white">
+            <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+                <div class="text-center mb-16 fade-in-up">
+                    <h2 class="text-3xl md:text-5xl font-sans tracking-tight mb-4 font-light">10 Arsenal Pengetahuan</h2>
+                    <p class="text-gray-500 max-w-2xl mx-auto text-sm md:text-lg font-light">Sistem pendidikan yang menyederhanakan hal kompleks menjadi logis. Apa yang akan Anda kuasai bersama LEODRA:</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
+                    
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">01</div>
+                        <h4 class="font-normal mb-2 text-lg">GPS Navigasi, Bukan Kompas</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Kami tidak hanya menunjuk arah (kompas), kami memberi Anda rute pasti berupa SOP Kapan Masuk dan Kapan Menolak Pasar.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">02</div>
+                        <h4 class="font-normal mb-2 text-lg">Kacamata X-Ray (Makro)</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Kemampuan melihat "tulang punggung" ekonomi. Memahami ke mana arus uang besar institusi mengalir sebelum terjadi di grafik.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">03</div>
+                        <h4 class="font-normal mb-2 text-lg">Sabuk Pengaman Keselamatan</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Ilmu manajemen risiko absolut. Anda diajarkan bagaimana "menabrak" (Loss) berkali-kali tanpa pernah "mati" (Margin Call).</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">04</div>
+                        <h4 class="font-normal mb-2 text-lg">Kotak Hitam Pesawat (Jurnal)</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Semua rekam jejak eksekusi Anda terekam. Evaluasi didasarkan pada data konkret (Hitam di atas Putih), bukan sekadar asumsi/perasaan.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">05</div>
+                        <h4 class="font-normal mb-2 text-lg">Pisau Bedah (Probabilitas)</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Membedah market bukan untuk menebak masa depan, melainkan memotong sinyal palsu dengan presisi probabilitas statistik matematis.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">06</div>
+                        <h4 class="font-normal mb-2 text-lg">Pondasi Beton Tahan Gempa</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Psikologi trading yang dikalibrasi. Saat gempa (volatilitas harga) terjadi, pondasi Anda kokoh, tidak ikut panik bersama trader ritel.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">07</div>
+                        <h4 class="font-normal mb-2 text-lg">Inkubator Suhu Stabil</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Lingkungan belajar objektif yang melindungi Anda dari *noise* dan euforia toxic media sosial yang memamerkan profit palsu.</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">08</div>
+                        <h4 class="font-normal mb-2 text-lg">Simulator Penerbangan</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Latihan menghadapi badai (market crash) di simulator (Backtest Excel TF) sebelum mempertaruhkan nyawa penumpang (uang riil).</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 border border-gray-200 hover:border-black transition-colors fade-in-up">
+                        <div class="w-10 h-10 bg-black text-white flex items-center justify-center font-normal font-mono mb-4">09</div>
+                        <h4 class="font-normal mb-2 text-lg">Jam Pasir yang Disaring</h4>
+                        <p class="text-xs text-gray-600 mb-3 font-light">Efisiensi waktu absolut. Kami membuang 80% teori sampah yang diajarkan luaran, dan fokus murni pada 20% ilmu yang menghasilkan probabilitas.</p>
+                    </div>
+
+                    <div class="bg-black p-6 border border-black hover:shadow-2xl transition-all fade-in-up group">
+                        <div class="w-10 h-10 bg-amber-500 text-white flex items-center justify-center font-normal font-mono mb-4">10</div>
+                        <h4 class="font-normal mb-2 text-amber-500 text-lg">Sertifikat Kelayakan Terbang</h4>
+                        <p class="text-xs text-gray-300 mb-3 font-light group-hover:text-white transition-colors">Validasi bukan dari selembar kertas ujian tertulis, melainkan Pin Integritas nyata dari performa portofolio *live* Anda.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- NILAI TAMBAH EKSKLUSIF (TIDAK ADA DI TEMPAT LAIN) -->
+        <section class="py-20 bg-gray-50 border-t border-gray-200">
+            <div class="max-w-[1200px] mx-auto px-6">
+            </div>
+        </section>
+
+        <!-- CLOSING CTA -->
+        <section class="py-24 bg-white text-black text-center border-t border-gray-200">
+            <div class="max-w-4xl mx-auto px-6 fade-in-up">
+                <h2 class="text-3xl md:text-5xl font-sans tracking-tight mb-8 leading-tight font-light">Tinggalkan Ilusi.<br> Bergabung Dengan Realita.</h2>
+                <p class="text-gray-600 mb-10 text-base md:text-xl leading-relaxed max-w-2xl mx-auto font-light">
+                    Jangan biarkan diri Anda menjadi korban industri berikutnya. Mulailah perjalanan edukasi yang berintegritas dan rasakan bagaimana menjadi trader profesional yang sesungguhnya.
+                </p>
+                <div class="flex justify-center mt-6">
+                    <a href="login.html" class="bg-black text-white text-base md:text-lg font-light shadow-xl px-12 py-5 flex items-center gap-3 hover:bg-gray-800 transition-colors uppercase tracking-widest">
+                        Masuk Ke Ekosistem Leodra <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ▼▼▼ FOOTER PROFESIONAL & DESKRIPTIF ▼▼▼ -->
+    <footer class="bg-[#14213d] text-white mt-auto w-full border-t border-[#14213d] relative z-10 reveal-on-scroll overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-8 mb-10">
+                
+                <!-- KIRI: Brand & Deskripsi (Diperlebar menjadi col-span-4) -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-4 flex flex-col text-center sm:text-left">
+                    <span class="font-light text-xl md:text-2xl tracking-widest text-white font-merriweather block mb-4">LEODRA</span>
+                    <p class="text-[11px] md:text-xs text-slate-300 leading-relaxed text-justify sm:text-left pr-0 md:pr-4 font-light">
+                        Platform manajemen risiko dan analitik trading profesional. <br class="hidden lg:block mb-2">
+                        <strong class="text-white font-medium">Keunggulan Eksklusif:</strong> Satu-satunya layanan dengan integrasi otomatis <strong>Backtest berbasis Excel (TF)</strong>, presisi kustomisasi <em>Take Profit/Risk Ratio</em> dinamis, serta analitik probabilitas performa mendalam yang tidak tersedia pada kalkulator trading konvensional.
+                    </p>
+                </div>
+
+                <!-- TENGAH: Menu Navigasi (Dijabarkan menjadi 3 Kolom - col-span-5) -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-5 w-full">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 w-full text-center sm:text-left">
+                        
+                        <!-- Kolom 1: Solusi & Bantuan -->
+                        <div class="flex flex-col items-center sm:items-start gap-8">
+                            <!-- Bagian Solusi -->
+                            <div class="flex flex-col items-center sm:items-start w-full">
+                                <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Solusi</h4>
+                                <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-light tracking-wide text-slate-300">
+                                    <a href="belajardanmenghasilkan.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Belajar & Menghasilkan</span></a>
+                                    <a href="untukbisnis.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Untuk Bisnis</span></a>
+                                    <a href="untukpendidikan.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Untuk Pendidikan</span></a>
+                                </div>
+                            </div>
+                            
+                            <!-- Bagian Bantuan (Diletakkan di bawah Solusi) -->
+                            <div class="flex flex-col items-center sm:items-start w-full">
+                                <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Bantuan</h4>
+                                <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-light tracking-wide text-slate-300">
+                                    <a href="pusatbantuanumum.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Pusat Bantuan Umum</span></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kolom 2: Perusahaan -->
+                        <div class="flex flex-col items-center sm:items-start w-full">
+                            <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Perusahaan</h4>
+                            <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-light tracking-wide text-slate-300">
+                                <a href="tentangleodra.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Tentang Leodra</span></a>
+                                <a href="visimisi.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Visi & Misi</span></a>
+                                <a href="nilainilaileodra.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Nilai - nilai Leodra</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Kolom 3: Utama -->
+                        <div class="flex flex-col items-center sm:items-start w-full col-span-2 sm:col-span-1 mt-6 sm:mt-0">
+                            <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Utama</h4>
+                            <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-light tracking-wide text-slate-300">
+                                <a href="index.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Home</span></a>
+                                <a href="index.html#vision" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Prinsip Dasar</span></a>
+                                <a href="index.html#stats" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Fakta Pasar</span></a>
+                                <a href="index.html#prob" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Sistem</span></a>
+                                <a href="login.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Daftar</span></a>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- KANAN: Terhubung (Diperlebar menjadi col-span-3, Konten di-Tengah/Center) -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-3 flex flex-col items-center justify-start w-full">
+                    <!-- Kontainer dibatasi agar rapi di tengah -->
+                    <div class="w-full max-w-[160px]">
+                        <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 text-center">Terhubung</h4>
+                        <div class="flex flex-col items-center gap-4 w-full justify-center">
+                            <a href="https://instagram.com" target="_blank" class="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors group">
+                                <span class="text-[10px] md:text-[11px] font-medium tracking-wider uppercase whitespace-nowrap">Instagram</span>
+                                <i data-lucide="instagram" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110 transition-transform flex-shrink-0"></i>
+                            </a>
+                            <a href="mailto:support@leodra.com" class="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors group" title="Email Support">
+                                <span class="text-[10px] md:text-[11px] font-medium tracking-wider uppercase whitespace-nowrap">Support</span>
+                                <i data-lucide="mail" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110 transition-transform flex-shrink-0"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Bawah: Disclaimer & Copyright -->
+            <div class="border-t border-white/10 pt-6 flex flex-col lg:flex-row justify-between items-center gap-6 text-[9px] md:text-[10px] text-slate-400 text-center lg:text-left">
+                <div class="max-w-4xl leading-relaxed font-light">
+                    <strong class="text-slate-300 font-medium">Peringatan Risiko:</strong> Trading pada instrumen keuangan membawa tingkat risiko tinggi. LEODRA adalah alat bantu analisis dan tidak menyediakan saran investasi. 
+                    <span class="inline-block mt-2 lg:mt-0 lg:ml-2">
+                        <a href="#" class="hover:text-slate-300 underline transition-colors whitespace-nowrap">Syarat & Ketentuan</a> &bull; 
+                        <a href="#" class="hover:text-slate-300 underline transition-colors whitespace-nowrap">Kebijakan Privasi</a>
+                    </span>
+                </div>
+                
+                <div class="flex flex-col items-center lg:items-end gap-2 flex-shrink-0 min-w-max font-light">
+                    <div class="flex items-center gap-3 font-normal tracking-wide">
+                        <span class="flex items-center gap-1.5 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse"></span> Sistem Normal</span>
+                        <span class="text-white/20">|</span>
+                        <span class="whitespace-nowrap">Versi 1.2.0</span>
+                    </div>
+                    <p class="whitespace-nowrap">&copy; 2026 LEODRA Analytics. Hak Cipta Dilindungi.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FLOATING WHATSAPP BUTTON -->
+    <a href="https://wa.me/6281234567890" target="_blank" class="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[100] group">
+        <div class="absolute inset-0 bg-green-500 wa-circle animate-ping opacity-20 group-hover:opacity-40 transition duration-300"></div>
+        <div class="relative bg-green-500 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center wa-circle shadow-2xl hover:bg-green-600 hover:-translate-y-1 transition-all duration-300">
+            <svg class="w-6 h-6 md:w-7 md:h-7 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
+        </div>
+    </a>
+
+    <!-- SCRIPTS -->
+    <script>
+        lucide.createIcons();
+
+        // Animasi pada scroll (Termasuk animasi Bar progress & SVG Path)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // Trigger animasi bar khusus di dalam elemen yang terlihat
+                    const bars = entry.target.querySelectorAll('.bar-fill');
+                    bars.forEach(bar => bar.classList.add('visible'));
+
+                    // Trigger animasi SVG Root
+                    const paths = entry.target.querySelectorAll('.root-path');
+                    paths.forEach(path => path.classList.add('visible'));
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+
+        // Waktu Real-time
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+            const elDate = document.getElementById("headerRealTimeDate");
+            if (elDate) elDate.textContent = dateStr;
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 60000); 
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const overlay = document.getElementById('mobile-nav-overlay');
+            if(overlay) {
+                overlay.classList.toggle('open');
+                document.body.classList.toggle('overflow-hidden');
+            }
+        }
+
+        // Mobile Accordion Toggle
+        function toggleMobileAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                content.classList.add('flex');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                content.classList.remove('flex');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        // --- APPLE STYLE MEGA MENU LOGIC ---
+        const menuData = {
+            home: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Utama</h4>
+                        <ul class="space-y-4">
+                            <li><a href="index.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Halaman awal</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            solusi: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Layanan Kami</h4>
+                        <ul class="space-y-4">
+                            <li><a href="belajardanmenghasilkan.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Belajar dan menghasilkan</a></li>
+                            <li><a href="untukbisnis.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Untuk bisnis</a></li>
+                            <li><a href="untukpendidikan.html" class="text-xl md:text-2xl font-medium text-black border-b-[3px] border-black transition-all pb-1 inline-block">Untuk pendidikan</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            perusahaan: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Tentang Kami</h4>
+                        <ul class="space-y-4">
+                            <li><a href="tentangleodra.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Tentang Leodra</a></li>
+                            <li><a href="visimisi.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Visi & Misi</a></li>
+                            <li><a href="nilainilaileodra.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Nilai - nilai Leodra</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            bantuan: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Dukungan</h4>
+                        <ul class="space-y-4">
+                            <li><a href="pusatbantuanumum.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Pusat Bantuan Umum</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `
+        };
+
+        const navItemsWrapper = document.querySelectorAll('.nav-item-wrapper');
+        const megaMenu = document.getElementById('mega-menu');
+        const megaMenuContent = document.getElementById('mega-menu-content');
+        const navOverlay = document.getElementById('nav-overlay');
+        const headerEl = document.querySelector('header');
+        let menuTimeout;
+
+        function resetMegaMenuHighlights() {
+            navItemsWrapper.forEach(item => {
+                const link = item.querySelector('.nav-link');
+                if(link) {
+                    link.classList.remove('border-black', 'text-black');
+                    link.classList.add('border-transparent');
+                }
+            });
+        }
+
+        function restoreActiveHighlights() {
+            navItemsWrapper.forEach(item => {
+                const link = item.querySelector('.nav-link');
+                if(link) {
+                    if (link.classList.contains('is-active')) {
+                        link.classList.add('border-black', 'text-black');
+                        link.classList.remove('border-transparent');
+                    } else {
+                        link.classList.remove('border-black', 'text-black');
+                        link.classList.add('border-transparent');
+                    }
+                }
+            });
+        }
+
+        function openAppleMenu(menuKey) {
+            clearTimeout(menuTimeout);
+            resetMegaMenuHighlights();
+
+            const activeWrapper = Array.from(navItemsWrapper).find(item => item.getAttribute('data-menu') === menuKey);
+            if (activeWrapper) {
+                const activeLink = activeWrapper.querySelector('.nav-link');
+                if (activeLink) {
+                    activeLink.classList.remove('border-transparent');
+                    activeLink.classList.add('border-black', 'text-black');
+                }
+            }
+            
+            if(menuData[menuKey]) {
+                megaMenuContent.style.opacity = '0'; 
+                setTimeout(() => {
+                    megaMenuContent.innerHTML = menuData[menuKey];
+                    megaMenuContent.style.opacity = '1'; 
+                }, 150);
+            }
+
+            megaMenu.classList.add('open');
+            navOverlay.classList.add('open');
+            headerEl.classList.remove('bg-white/90', 'backdrop-blur-md');
+            headerEl.classList.add('bg-white');
+        }
+
+        function closeAppleMenu() {
+            menuTimeout = setTimeout(() => {
+                megaMenu.classList.remove('open');
+                navOverlay.classList.remove('open');
+                megaMenuContent.style.opacity = '0';
+                
+                restoreActiveHighlights();
+                
+                setTimeout(() => {
+                    if(!megaMenu.classList.contains('open')){
+                        headerEl.classList.remove('bg-white');
+                        headerEl.classList.add('bg-white/90', 'backdrop-blur-md');
+                    }
+                }, 400);
+            }, 100); 
+        }
+
+        navItemsWrapper.forEach(item => {
+            item.addEventListener('mouseenter', () => openAppleMenu(item.getAttribute('data-menu')));
+            item.addEventListener('mouseleave', closeAppleMenu);
+        });
+
+        megaMenu.addEventListener('mouseenter', () => clearTimeout(menuTimeout));
+        megaMenu.addEventListener('mouseleave', closeAppleMenu);
+
+    </script>
+</body>
+</html>

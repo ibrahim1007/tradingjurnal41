@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nilai-nilai Leodra - Integritas & Realita Pasar</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- GLOBAL SETTINGS --- */
+        html, body { overflow-x: hidden; width: 100%; }
+        html { font-size: 14px; scroll-padding-top: 120px; }
+        @media (min-width: 1024px) { 
+            body { zoom: 0.85; -moz-transform: scale(0.85); -moz-transform-origin: top center; }
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #0f0f0f; -webkit-font-smoothing: antialiased; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        /* Mobile Nav Styles */
+        .mobile-nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 100px; z-index: 999; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); background: rgba(255,255,255,0.98); }
+        .mobile-nav-overlay.open { transform: translateX(0); }
+        .mobile-nav-overlay ul { list-style: none; padding: 0; margin-top: 1rem; width: 100%; }
+        .mobile-nav-overlay ul li { margin: 0; opacity: 0; transform: translateY(20px); transition: 0.5s ease; } 
+        .mobile-nav-overlay.open ul li { opacity: 1; transform: translateY(0); }
+
+        /* COMPONENTS */
+        .btn-primary { background: #000; color: #fff; padding: 1rem 2rem; border-radius: 0; font-weight: 500; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.85rem; text-align: center; }
+        .btn-primary:hover { background: #222; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+
+        /* SHARP EDGES OVERRIDE */
+        .rounded, .rounded-sm, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-full { border-radius: 0 !important; }
+        .w-2\.h-2, .w-1\.5\.h-1\.5, .wa-circle, .circle-icon { border-radius: 9999px !important; }
+
+        /* APPLE STYLE MEGA MENU */
+        .nav-overlay { position: fixed; inset: 0; top: 80px; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        @media (min-width: 768px) { .nav-overlay { top: 96px; } }
+        .nav-overlay.open { opacity: 1; pointer-events: auto; }
+        .mega-menu-container { position: absolute; top: 100%; left: 0; width: 100%; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); overflow: hidden; max-height: 0; opacity: 0; border-bottom: 1px solid transparent; transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, border-color 0.4s ease; }
+        .mega-menu-container.open { max-height: 500px; opacity: 1; border-bottom-color: #e5e5e5; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+        /* Custom Animations */
+        .fade-in-up { opacity: 0; transform: translateY(20px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade-in-up.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-white text-gray-900">
+
+    <!-- Mobile Navigation Overlay -->
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay md:hidden bg-white/95 backdrop-blur-xl overflow-y-auto">
+        <button class="absolute top-6 right-6 cursor-pointer text-black text-4xl hover:rotate-90 transition duration-300" onclick="toggleMobileMenu()">&times;</button>
+        <div class="w-full px-8 pb-12 mt-4 max-w-sm mx-auto">
+            <ul class="flex flex-col w-full text-left">
+                <!-- Tambahan Menu Home (Di Atas Solusi) -->
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-home')">
+                        Home <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-home"></i>
+                    </button>
+                    <div id="mobile-home" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="index.html" class="block hover:text-black font-light">Halaman awal</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-solusi')">
+                        Solusi <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-solusi"></i>
+                    </button>
+                    <div id="mobile-solusi" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="belajardanmenghasilkan.html" class="block hover:text-black font-light">Belajar dan menghasilkan</a>
+                        <a href="untukbisnis.html" class="block hover:text-black font-light">Untuk bisnis</a>
+                        <a href="untukpendidikan.html" class="block hover:text-black font-light">Untuk pendidikan</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-perusahaan')">
+                        Perusahaan <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500 rotate-180" id="icon-mobile-perusahaan"></i>
+                    </button>
+                    <!-- Terbuka secara default karena sedang di bagian Perusahaan -->
+                    <div id="mobile-perusahaan" class="flex flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="tentangleodra.html" class="block hover:text-black font-light pl-2">Tentang Leodra</a>
+                        <a href="visimisi.html" class="block hover:text-black font-light pl-2">Visi & Misi</a>
+                        <!-- Highlight Aktif -->
+                        <a href="nilainilaileodra.html" class="block font-medium text-black border-l-2 border-black pl-2">Nilai - nilai Leodra</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-bantuan')">
+                        Bantuan <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-bantuan"></i>
+                    </button>
+                    <div id="mobile-bantuan" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="pusatbantuanumum.html" class="block hover:text-black font-light">Pusat Bantuan Umum</a>
+                    </div>
+                </li>
+                <!-- Bagian Data Menu Sesuai Permintaan -->
+                <li class="border-b border-gray-200"><a href="#vision" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Prinsip Dasar</a></li>
+                <li class="border-b border-gray-200"><a href="#stats" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Fakta Pasar</a></li>
+                <li class="border-b border-gray-200"><a href="#prob" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Sistem</a></li>
+            </ul>
+            <div class="mt-8"><a href="login.html" class="bg-black text-white px-8 w-full h-12 flex items-center justify-center rounded-none text-base font-light hover:bg-gray-800 transition">Masuk</a></div>
+        </div>
+    </div>
+
+    <!-- APPLE STYLE OVERLAY -->
+    <div id="nav-overlay" class="nav-overlay"></div>
+
+    <!-- HEADER UTAMA -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full pl-4 md:pl-8 pr-4 md:pr-0 flex items-center justify-between gap-2">
+            <div class="flex items-center h-full">
+                <div class="flex items-center flex-shrink-0">
+                    <a href="index.html" class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather hover:text-gray-700 transition">LEODRA</a>
+                </div>
+            </div>
+            <button class="md:hidden p-2 text-black" onclick="toggleMobileMenu()"><i data-lucide="menu" class="w-6 h-6"></i></button>
+            <div class="hidden md:flex items-center justify-end flex-shrink-0 gap-4 lg:gap-6 h-full">
+                <nav class="flex items-center gap-4 lg:gap-6 text-sm lg:text-base text-slate-800 font-normal h-full">
+                    <!-- Tambahan Menu Home (Di Kiri Solusi) -->
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="home">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Home</span>
+                    </div>
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="solusi">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Solusi</span>
+                    </div>
+                    <!-- Class is-active tetap terjaga pada 'Perusahaan' -->
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="perusahaan">
+                        <span class="nav-link py-1 border-b-[3px] border-black text-black transition cursor-default is-active font-normal">Perusahaan</span>
+                    </div>
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="bantuan">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Bantuan</span>
+                    </div>
+                    <a href="index.html#vision" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Prinsip Dasar</a>
+                    <a href="index.html#stats" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Fakta Pasar</a>
+                    <a href="index.html#prob" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Sistem</a>
+                </nav>
+                <div class="w-px h-6 bg-gray-300"></div>
+                <span id="headerRealTimeDate" class="text-slate-800 text-sm lg:text-base font-normal whitespace-nowrap" style="font-family: 'Inter', sans-serif;">-- -- ----</span>
+                <a href="login.html" class="bg-black text-white px-6 lg:px-10 h-full flex items-center justify-center rounded-none text-sm lg:text-base font-light hover:bg-gray-800 transition-all whitespace-nowrap border-b-[3px] border-transparent hover:border-white">Masuk</a>
+            </div>
+        </div>
+        <div id="mega-menu" class="mega-menu-container">
+            <div class="max-w-[1400px] mx-auto px-6 md:px-12 py-10 transition-opacity duration-300 opacity-0" id="mega-menu-content"></div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow pt-20 md:pt-24 flex flex-col bg-white">
+        
+        <!-- BREADCRUMB -->
+        <div class="w-full px-6 md:px-12 py-3 bg-white border-b border-gray-100 shadow-sm z-30 relative">
+            <p class="text-[10px] md:text-xs text-gray-500 font-mono tracking-widest uppercase flex items-center gap-2">
+                <span>Perusahaan</span> <i data-lucide="chevron-right" class="w-3 h-3 text-gray-300"></i> <span class="text-black font-medium">Nilai - nilai Leodra</span>
+            </p>
+        </div>
+
+        <!-- HERO SECTION: THE MANIFESTO -->
+        <section class="max-w-[1400px] mx-auto w-full px-6 md:px-12 py-20 md:py-32 fade-in-up">
+            <div class="max-w-4xl">
+                <span class="text-red-600 font-medium tracking-[0.3em] uppercase mb-4 block text-[10px] md:text-sm border-l-2 border-red-600 pl-3">Membongkar Realita Pasar</span>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight mb-8 leading-tight text-black">
+                    Menghancurkan Ilusi. <br>
+                    <span class="italic text-gray-400">Membangun Integritas.</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-600 leading-relaxed font-light mb-10">
+                    Sebelum kita membicarakan nilai kebaikan, kita harus berani menatap kebusukan yang sedang terjadi. Industri ini telah dibajak oleh oknum yang mengeksploitasi ketidaktahuan pemula. LEODRA hadir sebagai antitesis dari semua manipulasi tersebut.
+                </p>
+            </div>
+        </section>
+
+        <!-- THE DARK SIDE: MEMBONGKAR KEBUSUKAN INDUSTRI -->
+        <section class="py-20 md:py-32 bg-[#0a0a0a] text-white relative border-t border-gray-800">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+            <div class="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+                <div class="text-center mb-16 fade-in-up">
+                    <h2 class="text-3xl md:text-5xl font-light tracking-tight mb-4 text-red-500">Penyakit Industri Saat Ini</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto text-sm md:text-lg font-light">Realita pahit yang sengaja disembunyikan oleh para oknum demi mengeruk keuntungan dari kerugian Anda.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 fade-in-up">
+                    
+                    <div class="bg-gray-900 border border-red-900/50 p-8 shadow-2xl relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-5"><i data-lucide="skull" class="w-24 h-24 text-red-500"></i></div>
+                        <h4 class="text-2xl font-medium mb-4 text-white">1. Mentor Palsu & "Flexing"</h4>
+                        <p class="text-sm text-gray-400 leading-relaxed mb-4 font-light">
+                            Mempromosikan gaya hidup mewah (mobil sport, liburan) hasil sewaan untuk menjual mimpi "Cepat Kaya". Mereka tidak mengajarkan probabilitas pasar, melainkan menjual harapan palsu agar Anda membeli kelas berharga mahal tanpa esensi keilmuan riil.
+                        </p>
+                        <ul class="text-xs text-red-400 space-y-2 font-mono">
+                            <li>Dampak: Mindset penjudi, frustasi, kebangkrutan mental.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gray-900 border border-red-900/50 p-8 shadow-2xl relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-5"><i data-lucide="crosshair" class="w-24 h-24 text-red-500"></i></div>
+                        <h4 class="text-2xl font-medium mb-4 text-white">2. Jebakan IB Broker</h4>
+                        <p class="text-sm text-gray-400 leading-relaxed mb-4 font-light">
+                            Oknum *Introducing Broker* (IB) yang menyebarkan sinyal *trading* membabi buta. Tujuan mereka bukanlah agar Anda profit, melainkan agar Anda melakukan transaksi sebanyak mungkin karena mereka hidup dari komisi (rebate) per Lot yang Anda perdagangkan, bahkan saat Anda merugi besar.
+                        </p>
+                        <ul class="text-xs text-red-400 space-y-2 font-mono">
+                            <li>Dampak: Over-trading, eksekusi tanpa alasan logis, Margin Call.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gray-900 border border-red-900/50 p-8 shadow-2xl relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-5"><i data-lucide="eye-off" class="w-24 h-24 text-red-500"></i></div>
+                        <h4 class="text-2xl font-medium mb-4 text-white">3. Manipulasi Data</h4>
+                        <p class="text-sm text-gray-400 leading-relaxed mb-4 font-light">
+                            Hanya menampilkan tangkapan layar (screenshot) saat profit berwarna biru, namun menyembunyikan posisi yang sedang merah parah atau akun yang hangus terbakar. Tidak ada jurnal terverifikasi, tidak ada audit eksternal. Semua hanyalah ilusi optik pemasaran.
+                        </p>
+                        <ul class="text-xs text-red-400 space-y-2 font-mono">
+                            <li>Dampak: Hilangnya kepercayaan investor, reputasi industri hancur.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- THE ANTIDOTE: NILAI POSITIF & SOLUSI LEODRA -->
+        <section class="py-20 md:py-32 bg-gray-50 border-y border-gray-200">
+            <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+                <div class="text-center mb-20 fade-in-up">
+                    <h2 class="text-3xl md:text-5xl font-light tracking-tight mb-4 text-black">Antivirus LEODRA</h2>
+                    <p class="text-gray-500 max-w-3xl mx-auto text-sm md:text-lg font-light">Kami tidak hanya mengkritik. Kami membangun infrastruktur perlindungan. Inilah nilai-nilai absolut kami beserta langkah konkret untuk menyelamatkan Anda dari ekosistem yang manipulatif.</p>
+                </div>
+
+                <!-- Nilai 1 -->
+                <div class="flex flex-col md:flex-row gap-10 items-center mb-16 fade-in-up">
+                    <div class="w-full md:w-1/2 bg-white p-10 border border-gray-200 shadow-sm relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
+                        <h3 class="text-2xl font-medium mb-4">1. Dari "Menebak" Menjadi "Probabilitas"</h3>
+                        <p class="text-gray-600 leading-relaxed mb-4 font-light">
+                            <strong class="font-medium">Nilai Kami:</strong> Kami menghapus ilusi bahwa arah market bisa ditebak 100%. Kami mengajarkan probabilitas statistik murni.
+                        </p>
+                        <div class="bg-gray-50 p-4 border-l-2 border-green-500">
+                            <p class="text-sm text-gray-800 font-medium mb-1">Struktur & Cara Kongkret:</p>
+                            <p class="text-xs text-gray-600 font-light">Anda difasilitasi dengan <span class="font-medium">Sistem Backtest Excel Terintegrasi</span>. Sebelum mempertaruhkan uang satu sen pun, Anda diwajibkan menguji sistem secara matematis ke data masa lalu untuk melihat <em class="font-normal">win-rate</em> dan <em class="font-normal">drawdown</em> aslinya.</p>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 flex justify-center">
+                        <i data-lucide="calculator" class="w-32 h-32 text-gray-300"></i>
+                    </div>
+                </div>
+
+                <!-- Nilai 2 -->
+                <div class="flex flex-col md:flex-row-reverse gap-10 items-center mb-16 fade-in-up">
+                    <div class="w-full md:w-1/2 bg-white p-10 border border-gray-200 shadow-sm relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                        <h3 class="text-2xl font-medium mb-4">2. Memutus Rantai *Over-Trading* IB</h3>
+                        <p class="text-gray-600 leading-relaxed mb-4 font-light">
+                            <strong class="font-medium">Nilai Kami:</strong> Kami tidak dibayar dari seberapa sering Anda melakukan transaksi yang merugikan. Keberhasilan kami diukur dari seberapa lama modal Anda bertahan di pasar.
+                        </p>
+                        <div class="bg-gray-50 p-4 border-l-2 border-blue-500">
+                            <p class="text-sm text-gray-800 font-medium mb-1">Struktur & Cara Kongkret:</p>
+                            <p class="text-xs text-gray-600 font-light">Sistem edukasi kami memaksa Anda membuat <span class="font-medium">SOP Batas Risiko Harian (Daily Limit)</span>. Jika batasan risiko tercapai, Anda diinstruksikan keras untuk menutup layar. Lebih sedikit *trade* berkualitas jauh lebih baik daripada ribuan *trade* sampah.</p>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 flex justify-center">
+                        <i data-lucide="shield-off" class="w-32 h-32 text-gray-300"></i>
+                    </div>
+                </div>
+
+                <!-- Nilai 3 -->
+                <div class="flex flex-col md:flex-row gap-10 items-center fade-in-up">
+                    <div class="w-full md:w-1/2 bg-white p-10 border border-gray-200 shadow-sm relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+                        <h3 class="text-2xl font-medium mb-4">3. Menghancurkan Manipulasi Data (Flexing)</h3>
+                        <p class="text-gray-600 leading-relaxed mb-4 font-light">
+                            <strong class="font-medium">Nilai Kami:</strong> Screenshot profit adalah ilusi. Kami percaya pada jejak digital berjangka panjang yang tidak dapat dimanipulasi secara manual.
+                        </p>
+                        <div class="bg-gray-50 p-4 border-l-2 border-amber-500">
+                            <p class="text-sm text-gray-800 font-medium mb-1">Struktur & Cara Kongkret:</p>
+                            <p class="text-xs text-gray-600 font-light">Integrasi <span class="font-medium">Digital Trading Journal Leodra</span>. Akun riil Anda terkoneksi dengan analitik kami. Ketika Anda stabil selama kurun waktu tertentu, sistem kamilah yang memberikan "Pin Integritas", menjadi bukti nyata reputasi Anda bagi calon investor.</p>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 flex justify-center">
+                        <i data-lucide="check-circle" class="w-32 h-32 text-gray-300"></i>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PENEGASAN SIKAP LEODRA -->
+        <section class="py-24 bg-white text-center border-b border-gray-200">
+            <div class="max-w-4xl mx-auto px-6 fade-in-up">
+                <i data-lucide="landmark" class="w-16 h-16 mx-auto text-black mb-6"></i>
+                <h2 class="text-3xl md:text-5xl font-light tracking-tight mb-8 leading-tight">Kami Berdiri Sebagai <br>Garis Pertahanan Terakhir.</h2>
+                <p class="text-gray-600 mb-10 text-base md:text-lg font-light leading-relaxed">
+                    LEODRA bukan sekadar penjual kursus. Kami adalah entitas yang berdiri memberikan kebenaran. Kami mengedukasi masyarakat luas tentang kecurangan broker nakal, kelicikan skema mentor palsu, dan kami mengubah arah kiblat industri ini kembali ke esensinya: <strong class="font-medium">Manajemen Risiko Institusional.</strong>
+                </p>
+                <div class="h-px w-24 bg-black mx-auto"></div>
+            </div>
+        </section>
+
+        <!-- WISDOM FROM THE LEGENDS (KUTIPAN & BIODATA) -->
+        <section class="py-20 md:py-32 bg-[#1a1a1a] text-white">
+            <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+                <div class="text-center mb-16 fade-in-up">
+                    <span class="text-white font-medium tracking-[0.3em] uppercase mb-4 block text-[10px] md:text-sm">Jejak Para Raksasa</span>
+                    <h2 class="text-3xl md:text-5xl font-light tracking-tight mb-4">Belajar Dari Legenda Nyata.</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto text-sm md:text-lg font-light">Bukan dari afiliator yang pamer mobil sewaan, melainkan dari para Maestro yang telah bertahan dan menaklukkan pasar finansial dunia selama puluhan tahun.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 fade-in-up">
+                    
+                    <!-- Legend 1 -->
+                    <div class="bg-black border border-gray-800 p-10 flex flex-col justify-between group hover:border-white transition-colors duration-500">
+                        <div>
+                            <i data-lucide="quote" class="w-10 h-10 text-gray-700 mb-6 group-hover:text-white transition-colors"></i>
+                            <p class="text-lg md:text-xl font-light text-gray-200 leading-relaxed mb-6 italic">
+                                "Saya selalu memikirkan tentang kehilangan uang, bukan tentang menghasilkan uang. Jangan fokus pada mencari untung, fokuslah pada bagaimana melindungi apa yang Anda miliki saat ini."
+                            </p>
+                        </div>
+                        <div class="border-t border-gray-800 pt-6 mt-6">
+                            <h4 class="text-xl font-medium text-white mb-1">Paul Tudor Jones</h4>
+                            <p class="text-xs text-gray-300 uppercase tracking-widest mb-3 font-light">Legenda Makro & Manajer Risiko</p>
+                            <p class="text-sm text-gray-500 leading-relaxed font-light">
+                                <strong class="font-medium">Biodata Hebat:</strong> Pendiri Tudor Investment Corporation. Ia menjadi melegenda karena berhasil memprediksi secara akurat dan meraup untung besar (ratusan juta dollar) pada saat krisis pasar saham terparah tahun 1987 yang dikenal sebagai peristiwa "Black Monday", murni karena manajemen risikonya yang tanpa cela.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Legend 2 -->
+                    <div class="bg-black border border-gray-800 p-10 flex flex-col justify-between group hover:border-white transition-colors duration-500">
+                        <div>
+                            <i data-lucide="quote" class="w-10 h-10 text-gray-700 mb-6 group-hover:text-white transition-colors"></i>
+                            <p class="text-lg md:text-xl font-light text-gray-200 leading-relaxed mb-6 italic">
+                                "Bukan soal apakah Anda benar atau salah yang paling penting, melainkan berapa banyak uang yang Anda hasilkan ketika Anda benar dan berapa banyak kerugian Anda saat Anda salah."
+                            </p>
+                        </div>
+                        <div class="border-t border-gray-800 pt-6 mt-6">
+                            <h4 class="text-xl font-medium text-white mb-1">George Soros</h4>
+                            <p class="text-xs text-gray-300 uppercase tracking-widest mb-3 font-light">Miliarder & Fund Manager Strategis</p>
+                            <p class="text-sm text-gray-500 leading-relaxed font-light">
+                                <strong class="font-medium">Biodata Hebat:</strong> Dikenal sebagai "Pria yang Meruntuhkan Bank of England". Pada tahun 1992, ia melakukan *short-selling* besar-besaran terhadap mata uang Poundsterling Inggris (Black Wednesday) dengan keyakinan makroekonomi yang kuat, meraup untung 1 Miliar Dollar AS dalam satu hari. Ia adalah simbol keberanian berbasis data.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- CALL TO ACTION -->
+        <section class="py-24 bg-black text-white text-center">
+            <div class="max-w-3xl mx-auto px-6 fade-in-up">
+                <h2 class="text-3xl md:text-5xl font-light tracking-tight mb-6 leading-tight">Berhenti Menghafal.<br> Mulailah Memahami.</h2>
+                <div class="flex justify-center mt-10">
+                    <!-- Link href="login.html" akan langsung mengarahkan user ke halaman login -->
+                    <a href="login.html" class="bg-white text-black text-base md:text-lg font-medium uppercase tracking-widest px-10 py-4 hover:bg-gray-200 transition-colors flex items-center justify-center gap-3">
+                        Mulai Belajar Sekarang <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ▼▼▼ FOOTER PROFESIONAL & DESKRIPTIF ▼▼▼ -->
+    <footer class="bg-[#14213d] text-white mt-auto w-full border-t border-[#14213d] relative z-10 reveal-on-scroll overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-8 mb-10">
+                
+                <!-- KIRI: Brand & Deskripsi (Diperlebar menjadi col-span-4) -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-4 flex flex-col text-center sm:text-left">
+                    <span class="font-light text-xl md:text-2xl tracking-widest text-white font-merriweather block mb-4">LEODRA</span>
+                    <p class="text-[11px] md:text-xs text-slate-300 leading-relaxed text-justify sm:text-left pr-0 md:pr-4">
+                        Platform manajemen risiko dan analitik trading profesional. <br class="hidden lg:block mb-2">
+                        <strong class="text-white font-medium">Keunggulan Eksklusif:</strong> Satu-satunya layanan dengan integrasi otomatis <strong class="font-medium">Backtest berbasis Excel (TF)</strong>, presisi kustomisasi <em class="font-normal">Take Profit/Risk Ratio</em> dinamis, serta analitik probabilitas performa mendalam yang tidak tersedia pada kalkulator trading konvensional.
+                    </p>
+                </div>
+
+                <!-- TENGAH: Menu Navigasi (Dijabarkan menjadi 3 Kolom - col-span-5) -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-5 w-full">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 w-full text-center sm:text-left">
+                        
+                        <!-- Kolom 1: Solusi & Bantuan -->
+                        <div class="flex flex-col items-center sm:items-start gap-8">
+                            <!-- Bagian Solusi -->
+                            <div class="flex flex-col items-center sm:items-start w-full">
+                                <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Solusi</h4>
+                                <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-medium tracking-wide text-slate-300">
+                                    <a href="belajardanmenghasilkan.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Belajar & Menghasilkan</span></a>
+                                    <a href="untukbisnis.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Untuk Bisnis</span></a>
+                                    <a href="untukpendidikan.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Untuk Pendidikan</span></a>
+                                </div>
+                            </div>
+                            
+                            <!-- Bagian Bantuan (Diletakkan di bawah Solusi) -->
+                            <div class="flex flex-col items-center sm:items-start w-full">
+                                <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Bantuan</h4>
+                                <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-medium tracking-wide text-slate-300">
+                                    <a href="pusatbantuanumum.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Pusat Bantuan Umum</span></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kolom 2: Perusahaan -->
+                        <div class="flex flex-col items-center sm:items-start w-full">
+                            <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Perusahaan</h4>
+                            <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-medium tracking-wide text-slate-300">
+                                <a href="tentangleodra.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Tentang Leodra</span></a>
+                                <a href="visimisi.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Visi & Misi</span></a>
+                                <a href="nilainilaileodra.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Nilai - nilai Leodra</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Kolom 3: Utama -->
+                        <div class="flex flex-col items-center sm:items-start w-full col-span-2 sm:col-span-1 mt-6 sm:mt-0">
+                            <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Utama</h4>
+                            <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-medium tracking-wide text-slate-300">
+                                <a href="index.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Home</span></a>
+                                <a href="index.html#vision" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Prinsip Dasar</span></a>
+                                <a href="index.html#stats" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Fakta Pasar</span></a>
+                                <a href="index.html#prob" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Sistem</span></a>
+                                <a href="login.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Daftar</span></a>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- KANAN: Terhubung (Diperlebar menjadi col-span-3, Konten di-Tengah/Center) -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-3 flex flex-col items-center justify-start w-full">
+                    <!-- Kontainer dibatasi agar rapi di tengah -->
+                    <div class="w-full max-w-[160px]">
+                        <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 text-center">Terhubung</h4>
+                        <div class="flex flex-col items-center gap-4 w-full justify-center">
+                            <a href="https://instagram.com" target="_blank" class="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors group">
+                                <span class="text-[10px] md:text-[11px] font-medium tracking-wider uppercase whitespace-nowrap">Instagram</span>
+                                <i data-lucide="instagram" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110 transition-transform flex-shrink-0"></i>
+                            </a>
+                            <a href="mailto:support@leodra.com" class="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors group" title="Email Support">
+                                <span class="text-[10px] md:text-[11px] font-medium tracking-wider uppercase whitespace-nowrap">Support</span>
+                                <i data-lucide="mail" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110 transition-transform flex-shrink-0"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Bawah: Disclaimer & Copyright -->
+            <div class="border-t border-white/10 pt-6 flex flex-col lg:flex-row justify-between items-center gap-6 text-[9px] md:text-[10px] text-slate-400 text-center lg:text-left">
+                <div class="max-w-4xl leading-relaxed">
+                    <strong class="text-slate-300 font-medium">Peringatan Risiko:</strong> Trading pada instrumen keuangan membawa tingkat risiko tinggi. LEODRA adalah alat bantu analisis dan tidak menyediakan saran investasi. 
+                    <span class="inline-block mt-2 lg:mt-0 lg:ml-2">
+                        <a href="#" class="hover:text-slate-300 underline transition-colors whitespace-nowrap">Syarat & Ketentuan</a> &bull; 
+                        <a href="#" class="hover:text-slate-300 underline transition-colors whitespace-nowrap">Kebijakan Privasi</a>
+                    </span>
+                </div>
+                
+                <div class="flex flex-col items-center lg:items-end gap-2 flex-shrink-0 min-w-max">
+                    <div class="flex items-center gap-3 font-medium tracking-wide">
+                        <span class="flex items-center gap-1.5 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse"></span> Sistem Normal</span>
+                        <span class="text-white/20">|</span>
+                        <span class="whitespace-nowrap">Versi 1.2.0</span>
+                    </div>
+                    <p class="whitespace-nowrap">&copy; 2026 LEODRA Analytics. Hak Cipta Dilindungi.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FLOATING WHATSAPP BUTTON -->
+    <a href="https://wa.me/6281234567890" target="_blank" class="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[100] group">
+        <div class="absolute inset-0 bg-green-500 wa-circle animate-ping opacity-20 group-hover:opacity-40 transition duration-300"></div>
+        <div class="relative bg-green-500 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center wa-circle shadow-2xl hover:bg-green-600 hover:-translate-y-1 transition-all duration-300">
+            <svg class="w-6 h-6 md:w-7 md:h-7 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
+        </div>
+    </a>
+
+    <!-- SCRIPTS -->
+    <script>
+        lucide.createIcons();
+
+        // Animasi pada scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+
+        // Waktu Real-time
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+            const elDate = document.getElementById("headerRealTimeDate");
+            if (elDate) elDate.textContent = dateStr;
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 60000); 
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const overlay = document.getElementById('mobile-nav-overlay');
+            if(overlay) {
+                overlay.classList.toggle('open');
+                document.body.classList.toggle('overflow-hidden');
+            }
+        }
+
+        // Mobile Accordion Toggle
+        function toggleMobileAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                content.classList.add('flex');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                content.classList.remove('flex');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        // --- APPLE STYLE MEGA MENU LOGIC ---
+        const menuData = {
+            home: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Utama</h4>
+                        <ul class="space-y-4">
+                            <li><a href="index.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Halaman awal</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            solusi: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Layanan Kami</h4>
+                        <ul class="space-y-4">
+                            <li><a href="belajardanmenghasilkan.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Belajar dan menghasilkan</a></li>
+                            <li><a href="untukbisnis.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Untuk bisnis</a></li>
+                            <li><a href="untukpendidikan.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Untuk pendidikan</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            perusahaan: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Tentang Kami</h4>
+                        <ul class="space-y-4">
+                            <li><a href="tentangleodra.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Tentang Leodra</a></li>
+                            <li><a href="visimisi.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Visi & Misi</a></li>
+                            <li><a href="nilainilaileodra.html" class="text-xl md:text-2xl font-medium text-black border-b-[3px] border-black transition-all pb-1 inline-block">Nilai - nilai Leodra</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            bantuan: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Dukungan</h4>
+                        <ul class="space-y-4">
+                            <li><a href="pusatbantuanumum.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Pusat Bantuan Umum</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `
+        };
+
+        const navItemsWrapper = document.querySelectorAll('.nav-item-wrapper');
+        const megaMenu = document.getElementById('mega-menu');
+        const megaMenuContent = document.getElementById('mega-menu-content');
+        const navOverlay = document.getElementById('nav-overlay');
+        const headerEl = document.querySelector('header');
+        let menuTimeout;
+
+        function resetMegaMenuHighlights() {
+            navItemsWrapper.forEach(item => {
+                const link = item.querySelector('.nav-link');
+                if(link) {
+                    link.classList.remove('border-black', 'text-black');
+                    link.classList.add('border-transparent');
+                }
+            });
+        }
+
+        function restoreActiveHighlights() {
+            navItemsWrapper.forEach(item => {
+                const link = item.querySelector('.nav-link');
+                if(link) {
+                    if (link.classList.contains('is-active')) {
+                        link.classList.add('border-black', 'text-black');
+                        link.classList.remove('border-transparent');
+                    } else {
+                        link.classList.remove('border-black', 'text-black');
+                        link.classList.add('border-transparent');
+                    }
+                }
+            });
+        }
+
+        function openAppleMenu(menuKey) {
+            clearTimeout(menuTimeout);
+            resetMegaMenuHighlights();
+
+            const activeWrapper = Array.from(navItemsWrapper).find(item => item.getAttribute('data-menu') === menuKey);
+            if (activeWrapper) {
+                const activeLink = activeWrapper.querySelector('.nav-link');
+                if (activeLink) {
+                    activeLink.classList.remove('border-transparent');
+                    activeLink.classList.add('border-black', 'text-black');
+                }
+            }
+            
+            if(menuData[menuKey]) {
+                megaMenuContent.style.opacity = '0'; 
+                setTimeout(() => {
+                    megaMenuContent.innerHTML = menuData[menuKey];
+                    megaMenuContent.style.opacity = '1'; 
+                }, 150);
+            }
+
+            megaMenu.classList.add('open');
+            navOverlay.classList.add('open');
+            headerEl.classList.remove('bg-white/90', 'backdrop-blur-md');
+            headerEl.classList.add('bg-white');
+        }
+
+        function closeAppleMenu() {
+            menuTimeout = setTimeout(() => {
+                megaMenu.classList.remove('open');
+                navOverlay.classList.remove('open');
+                megaMenuContent.style.opacity = '0';
+                
+                restoreActiveHighlights();
+                
+                setTimeout(() => {
+                    if(!megaMenu.classList.contains('open')){
+                        headerEl.classList.remove('bg-white');
+                        headerEl.classList.add('bg-white/90', 'backdrop-blur-md');
+                    }
+                }, 400);
+            }, 100); 
+        }
+
+        navItemsWrapper.forEach(item => {
+            item.addEventListener('mouseenter', () => openAppleMenu(item.getAttribute('data-menu')));
+            item.addEventListener('mouseleave', closeAppleMenu);
+        });
+
+        megaMenu.addEventListener('mouseenter', () => clearTimeout(menuTimeout));
+        megaMenu.addEventListener('mouseleave', closeAppleMenu);
+
+    </script>
+</body>
+</html>

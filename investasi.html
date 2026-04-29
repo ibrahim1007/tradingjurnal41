@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Investasi - LEODRA (Flat vs Smart Capped)</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- SheetJS untuk Membaca Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Chart.js untuk Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- PDF LIBRARIES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Merriweather:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Gaya Global */
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #334155; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 0; } 
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        /* Responsive Zoom adjustment for large screens only */
+        @media screen and (min-width: 1280px) { body { zoom: 0.8; } }
+        
+        /* Margin top to clear fixed header */
+        main { margin-top: 6rem !important; }
+        @media screen and (min-width: 768px) { main { margin-top: 7rem !important; } }
+        
+        /* Sidebar Animasi & Collapse */
+        #desktop-sidebar { 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            overflow-x: hidden; 
+            white-space: nowrap; 
+        }
+        #desktop-sidebar.is-collapsed { width: 5.5rem; }
+        #desktop-sidebar.is-collapsed:hover { width: 16rem; box-shadow: 4px 0 24px rgba(0,0,0,0.08); }
+        
+        #desktop-sidebar.is-collapsed:not(:hover) a.flex,
+        #desktop-sidebar.is-collapsed:not(:hover) button.flex {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            justify-content: center !important;
+        }
+
+        .sidebar-text { 
+            transition: opacity 0.2s, max-width 0.3s; 
+            max-width: 200px; 
+            overflow: hidden; 
+            display: inline-block;
+            vertical-align: middle;
+        }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-text { opacity: 0; max-width: 0; }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-icon-margin { margin-right: 0; }
+        .sidebar-icon-margin { transition: margin-right 0.3s; margin-right: 0.75rem; }
+        
+        #toggle-sidebar-btn { transition: transform 0.3s; }
+        #desktop-sidebar.is-collapsed:not(:hover) #toggle-sidebar-btn { transform: rotate(180deg); }
+        
+        #main-wrapper { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* =================== CUSTOM KALKULATOR CSS =================== */
+        .container-wrapper {
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border-radius: 0; 
+            border: 1px solid #eeeeee;
+            padding: 1.25rem;
+            width: 100%;
+        }
+        @media screen and (min-width: 640px) {
+            .container-wrapper { padding: 1.5rem; }
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 0.25rem; justify-content: flex-start; }
+        .label-wrapper { min-height: 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 0.1rem; }
+
+        .input-field {
+            border: 1px solid #e0e0e0;
+            background-color: #f1f5f9;
+            color: #333;
+            border-radius: 0; 
+            padding: 0.6rem 0.8rem;
+            font-size: 0.875rem;
+            width: 100%;
+            height: 38px;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus { background-color: #ffffff; outline: none; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .input-field:disabled { background-color: #e2e8f0; color: #475569; cursor: not-allowed; border-color: #cbd5e1; }
+
+        .file-upload-wrapper {
+            border: 2px dashed #e0e0e0;
+            padding: 1rem;
+            border-radius: 0; 
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            margin-bottom: 1rem;
+        }
+        .file-upload-wrapper.uploaded { border-color: #10b981; background-color: #f0fdf4; }
+
+        .input-label { color: #5a5a5a; font-weight: 700; font-size: 0.70rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        .button-green, .button-light, .download-button {
+            padding: 0.7rem 1rem;
+            border-radius: 0; 
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+        .button-green { background-color: #0f172a; color: white; }
+        .button-green:hover { background-color: #1e293b; }
+        .button-light { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .button-light:hover { background-color: #e2e8f0; }
+        .download-button { width: 100%; }
+        .pdf-button { background-color: #dc2626; color: white; }
+        .pdf-button:hover { background-color: #b91c1c; }
+        
+        .results-table {
+            width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px;
+            font-size: 0.65rem; border: 1px solid #e5e7eb; border-radius: 0; overflow: hidden; 
+        }
+        .results-table th, .results-table td { border-bottom: 1px solid #e5e7eb; border-right: 1px solid #f3f4f6; padding: 0.5rem; text-align: center; white-space: nowrap; vertical-align: middle; }
+        .results-table thead th { background-color: #f8fafc; color: #334155; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .sticky-col { position: sticky; left: 0; z-index: 20; background-color: #ffffff; border-right: 2px solid #f1f5f9 !important; }
+        .row-label { font-weight: 600; color: #475569; text-align: left; background-color: #f8fafc; }
+        .year-header { background-color: #0f172a !important; color: #ffffff !important; text-align: left; font-weight: 700; font-size: 0.75rem; padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .net-profit-cell { background-color: #ecfdf5 !important; color: #059669 !important; font-weight: 700; border-left: 2px solid #10b981; }
+        .results-table tbody tr:hover td { background-color: #f8fafc; }
+
+        .info-section { background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 0; padding: 1.5rem; margin-top: 1.5rem; width: 100%; } 
+        
+        .logic-card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0; padding: 1.25rem; height: 100%; } 
+        .logic-formula { background-color: #ffffff; border: 1px solid #e2e8f0; padding: 0.5rem; border-radius: 0; font-family: monospace; font-size: 0.75rem; color: #2563eb; display: block; margin-top: 0.5rem; } 
+
+        /* PERBAIKAN: Menghapus fixed height agar container bisa membesar mengikuti canvas */
+        .chart-container { position: relative; margin-top: 2rem; margin-bottom: 2rem; width: 100%; background: #fff; border: 1px solid #e2e8f0; border-radius: 0; padding: 1rem; display: flex; flex-direction: column; } 
+
+        .future-value-display { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; text-align: left; font-size: 0.9rem; color: #334155; margin-bottom: 1.5rem; } 
+        .future-value-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .future-value-row span:last-child { font-size: 0.875rem; font-weight: 700; color: #0f172a; }
+
+        .risk-metric-card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0; padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; } 
+        .risk-metric-label { font-size: 0.65rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.05em; }
+        .risk-metric-value { font-size: 1.25rem; font-weight: 700; color: #0f172a; }
+
+        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.70rem; }
+        .heatmap-table th, .heatmap-table td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: center; }
+        .heatmap-cell { color: #1e293b; font-weight: 600; }
+
+        .guide-step { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+        .guide-number { background-color: #0f172a; color: white; width: 24px; height: 24px; border-radius: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; flex-shrink: 0; } 
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- ▼▼▼ HEADER UTAMA ▼▼▼ -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+            
+            <!-- 1. LOGO (KIRI) -->
+            <div class="flex items-center flex-shrink-0 cursor-pointer" onclick="window.location.href='index.html'">
+                <span class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather">LEODRA</span>
+            </div>
+
+            <!-- 2. INDIKATOR WAKTU & TANGGAL (TENGAH) -->
+            <div class="flex-1 flex flex-col justify-center items-center px-1 overflow-hidden">
+                <span id="headerRealTimeClock" class="text-red-600 font-medium text-[11px] sm:text-[12px] md:text-sm tracking-wide leading-none whitespace-nowrap mb-0.5" style="font-family: 'Inter', sans-serif;">
+                    --:--:--
+                </span>
+                <span id="headerRealTimeDate" class="text-black font-light text-[9px] sm:text-[10px] md:text-xs tracking-wide leading-none whitespace-nowrap truncate max-w-full" style="font-family: 'Inter', sans-serif;">
+                    -- -- ----
+                </span>
+            </div>
+
+            <!-- 3. AREA KANAN (USER & MENU MOBILE) -->
+            <div class="flex items-center justify-end gap-2 md:gap-4 flex-shrink-0 min-w-[60px]">
+                <!-- Desktop User Info -->
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="text-right">
+                        <p id="desktop-user-info" class="text-sm font-light tracking-wide text-gray-900 leading-tight font-merriweather">Loading...</p>
+                        <div class="flex items-center justify-end gap-1.5 mt-1">
+                            <div class="w-1.5 h-1.5 rounded-none bg-green-500 animate-pulse"></div>
+                            <span class="text-[10px] text-green-600 font-bold tracking-wider uppercase">Online</span>
+                        </div>
+                    </div>
+                    <img id="desktop-user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=0f172a&color=fff" alt="Profil User" class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0">
+                </div>
+                
+                <button onclick="toggleMenu()" id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-none transition-colors relative w-10 h-10 flex items-center justify-center overflow-hidden" aria-label="Toggle Menu">
+                    <span id="icon-menu" class="absolute transition-all duration-300 transform scale-100 rotate-0 opacity-100 flex items-center justify-center w-full h-full">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </span>
+                    <span id="icon-close" class="absolute transition-all duration-300 transform scale-0 -rotate-90 opacity-0 flex items-center justify-center w-full h-full text-rose-600">
+                        <i data-lucide="x" class="w-7 h-7"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ▼▼▼ MENU MOBILE ▼▼▼ -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white/90 backdrop-blur-md z-[40] transform translate-x-full transition-transform duration-400 ease-in-out md:hidden flex flex-col pt-20 pb-4 overflow-y-auto">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
+            <img id="mobile-user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=0f172a&color=fff" alt="Profil User" class="w-11 h-11 rounded-full object-cover border border-slate-200 shadow-sm flex-shrink-0">
+            <div class="overflow-hidden w-full">
+                <p id="mobile-user-name" class="text-[14px] font-sans font-bold text-slate-900 leading-tight tracking-wide truncate">Guest</p>
+                <p id="mobile-user-email" class="text-[11px] font-sans text-slate-500 font-medium tracking-wide truncate mt-0.5">Belum login</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span class="text-[8px] text-emerald-600 font-bold uppercase tracking-wider">Online</span>
+                    <span class="text-slate-300 mx-1 text-[8px]">•</span>
+                    <span id="mobile-user-time" class="text-[8px] text-slate-400 font-mono uppercase tracking-wider">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto px-6 py-2 flex flex-col w-full">
+            <ul class="flex flex-col w-full text-left">
+                <li class="border-b border-slate-100">
+                    <a href="index.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Home</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="login.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Login</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="beranda.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Beranda</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="berandatrader.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Beranda Trader</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="berandaanalis.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Beranda Analis</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="edukasisystem.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Education for System</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="topanalisdantrader.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Top Analis Dan Trader</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                
+                <!-- MENU AKTIF MOBILE: INVESTASI -->
+                <li class="border-b border-black">
+                    <a href="investasi.html" class="flex items-center justify-between py-2.5 text-[13px] text-black font-bold transition-colors">
+                        <span>Investasi</span> <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-black"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="backtest.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Backtest</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="langganan.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Langganan</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="pengaturan.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Pengaturan</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="px-6 mt-4 pb-2 flex-shrink-0">
+            <button onclick="logout()" class="w-full py-3 text-black bg-slate-100 hover:bg-slate-200 transition-colors text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                Keluar Sesi
+            </button>
+        </div>
+    </div>
+
+    <!-- ▼▼▼ SIDEBAR DESKTOP ▼▼▼ -->
+    <aside id="desktop-sidebar" class="fixed left-0 top-24 bottom-0 w-64 bg-white border-r border-slate-200 z-40 hidden md:flex flex-col py-4 group">
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <div class="flex items-center justify-between px-2 mb-4">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest sidebar-text">Menu Navigasi</p>
+                <button onclick="toggleSidebarCollapse()" id="toggle-sidebar-btn" class="p-1 rounded-none text-slate-400 hover:text-[#14213d] hover:bg-slate-100 transition-colors">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <a href="index.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="home" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Home</span>
+            </a>
+            <a href="login.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="log-in" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Login</span>
+            </a>
+            <a href="beranda.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="globe" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Beranda</span>
+            </a>
+            <a href="berandatrader.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Beranda Trader</span>
+            </a>
+            <a href="berandaanalis.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="activity" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Beranda Analis</span>
+            </a>
+            <a href="edukasisystem.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="graduation-cap" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Education for System</span>
+            </a>
+            <a href="topanalisdantrader.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="award" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Top Analis Dan Trader</span>
+            </a>
+            
+            <!-- MENU AKTIF SIDEBAR: INVESTASI -->
+            <a href="investasi.html" class="flex items-center px-4 py-2 text-[14px] font-medium rounded-none bg-[#14213d] text-white shadow-md shadow-slate-200 transition-all duration-300 mt-2">
+                <i data-lucide="trending-up" class="w-[18px] h-[18px] text-white flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Investasi</span>
+            </a>
+            <a href="backtest.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="history" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Backtest</span>
+            </a>
+            <a href="langganan.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="credit-card" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Langganan</span>
+            </a>
+            <a href="pengaturan.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="settings" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Pengaturan</span>
+            </a>
+        </nav>
+        
+        <div class="px-4 pb-2 mt-auto">
+            <div class="h-px bg-slate-100 w-full mb-3"></div>
+            <button onclick="logout()" class="w-full flex items-center px-4 py-2.5 text-[14px] font-medium rounded-none text-rose-600 hover:bg-rose-50 transition-all duration-300 mb-3">
+                <i data-lucide="log-out" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Logout</span>
+            </button>
+            <p class="text-[10px] text-slate-400 font-medium text-center w-full sidebar-text">© 2026 LEODRA</p>
+        </div>
+    </aside>
+
+    <!-- ▼▼▼ WRAPPER KONTEN UTAMA ▼▼▼ -->
+    <div id="main-wrapper" class="md:ml-64 w-full md:w-[calc(100%-16rem)] flex-grow flex flex-col transition-all duration-300 relative">
+        <main class="flex-grow max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 w-full mb-10">
+            <div class="container-wrapper" id="calculatorContainer">
+                <h1 class="text-lg sm:text-xl md:text-2xl font-merriweather font-light tracking-wide text-gray-900 mb-6 text-center md:text-left border-b border-gray-100 pb-4">Kalkulator Investasi & Backtest</h1>
+
+                <div class="flex flex-col lg:flex-row gap-5 mb-6 items-stretch">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1" id="inputSection">
+                        <div class="input-group">
+                            <div class="label-wrapper">
+                                <label for="investmentAmount" class="input-label">Modal Awal ($)</label>
+                            </div>
+                            <input type="number" id="investmentAmount" class="input-field" value="100000" placeholder="100000">
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="label-wrapper">
+                                <label for="pairSelect" class="input-label">Instrumen</label>
+                            </div>
+                            <select id="pairSelect" class="input-field cursor-not-allowed bg-gray-200 text-slate-500 font-bold" disabled title="Akan terisi otomatis saat Anda mengunggah laporan Excel">
+                                <option value="">-- Menunggu Data --</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="label-wrapper">
+                                <label for="riskPerTradePercentage" class="input-label">Risk / Trade (%)</label>
+                            </div>
+                            <input type="number" id="riskPerTradePercentage" class="input-field" value="1" step="0.01" placeholder="1">
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="label-wrapper">
+                                <label for="monthlyReturn" class="input-label">Target Bln (%)</label>
+                                <div class="flex items-center ml-2">
+                                     <input type="checkbox" id="compareChartToggle" class="w-3 h-3 text-blue-600 bg-white border-gray-300 rounded-none focus:ring-blue-500 focus:ring-2">
+                                     <label for="compareChartToggle" class="ml-1 text-[9px] text-gray-500 font-bold cursor-pointer select-none uppercase tracking-wider">Bandingkan Flat</label>
+                                </div>
+                            </div>
+                            <input type="number" id="monthlyReturn" class="input-field" value="5" step="0.01" placeholder="Kosong = Flat Mode">
+                        </div>
+                    </div>
+
+                    <div class="w-full lg:w-1/4 lg:min-w-[250px]">
+                        <div class="file-upload-wrapper p-4 bg-gray-50 m-0 h-full flex flex-col items-center justify-center transition-colors hover:bg-gray-100" id="dropZone">
+                            <input type="file" id="csvFileInput" accept=".csv, .xlsx" class="hidden">
+                            <label for="csvFileInput" class="cursor-pointer w-full text-center h-full flex flex-col items-center justify-center">
+                                <div class="w-10 h-10 bg-white rounded-none shadow-sm flex items-center justify-center mx-auto mb-3 text-blue-600 border border-gray-200 transition-transform hover:scale-105">
+                                    <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                                </div>
+                                <p class="text-[13px] font-bold text-gray-800 tracking-wide leading-tight">Unggah Data</p>
+                                <p class="text-[10px] text-gray-500 mt-1 font-medium leading-tight" id="fileStatusText">Menerima Pips / Rekap (.xlsx, .csv)</p>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-none p-4 mb-6">
+                    <h3 class="text-xs font-bold text-gray-800 mb-4 uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="wallet" class="w-4 h-4 text-emerald-600"></i> Manajemen Arus Kas
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <div class="label-wrapper">
+                                <label for="monthlyDeposit" class="input-label">Deposit Rutin/Bln ($)</label>
+                            </div>
+                            <input type="number" id="monthlyDeposit" class="input-field" value="0" placeholder="0">
+                        </div>
+                        <div class="input-group">
+                            <div class="label-wrapper">
+                                <label for="monthlyWithdrawal" class="input-label">Penarikan Rutin/Bln ($)</label>
+                            </div>
+                            <input type="number" id="monthlyWithdrawal" class="input-field" value="0" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 mb-8">
+                    <button id="resetBtn" class="button-light flex-1 order-2 sm:order-1 border-gray-300"><i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i> Reset Form</button>
+                    <button id="calculateBtn" class="button-green flex-1 order-1 sm:order-2 shadow-lg"><i data-lucide="play" class="w-4 h-4 mr-2 fill-current"></i> Hitung Proyeksi</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="future-value-display !mb-0 !h-full border-l-4 border-l-blue-600">
+                        <div class="future-value-row">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Saldo Akhir (Real Balance)</span>
+                            <span id="futureValue" class="text-blue-700 text-sm sm:text-base md:text-lg font-bold">0 USD</span>
+                        </div>
+                        <div class="future-value-row" style="border-top: 1px solid #e2e8f0; padding-top: 0.75rem;">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Pertumbuhan</span>
+                            <span id="totalGrowth" class="text-emerald-600 font-bold">0.00%</span>
+                        </div>
+                    </div>
+                    <div class="future-value-display !mb-0 !h-full border-l-4 border-l-rose-500">
+                        <div class="future-value-row">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Max Drawdown (Terbesar)</span>
+                            <span id="maxDrawdownDisplay" class="text-rose-600 text-sm font-bold">0.00%</span>
+                        </div>
+                        <div class="future-value-row" style="border-top: 1px solid #e2e8f0; padding-top: 0.5rem;">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nilai Rugi Max DD</span>
+                            <span id="maxDrawdownValueDisplay" class="text-rose-600 font-medium">0 USD</span>
+                        </div>
+                        <div class="future-value-row" style="border-top: 1px solid #e2e8f0; padding-top: 0.5rem;">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Basis Modal Risiko (Lot)</span>
+                            <span id="riskCapitalDisplay" class="text-gray-700 font-bold">0 USD</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="riskMetricsDashboard" class="hidden mb-8">
+                    <h3 class="text-xs font-bold text-gray-800 mb-3 uppercase tracking-wider border-b border-gray-100 pb-2">Transparansi Risiko & Kualitas Aset</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <div class="risk-metric-card bg-slate-50">
+                            <span class="risk-metric-label">Sharpe Ratio</span>
+                            <span id="sharpeRatioVal" class="risk-metric-value text-blue-600">N/A</span>
+                        </div>
+                        <div class="risk-metric-card bg-slate-50">
+                            <span class="risk-metric-label">Sortino Ratio</span>
+                            <span id="sortinoRatioVal" class="risk-metric-value text-indigo-600">N/A</span>
+                        </div>
+                        <div class="risk-metric-card bg-slate-50">
+                            <span class="risk-metric-label">Profit Factor</span>
+                            <span id="profitFactorVal" class="risk-metric-value text-emerald-600">N/A</span>
+                        </div>
+                        <div class="risk-metric-card bg-slate-50">
+                            <span class="risk-metric-label">Win Rate</span>
+                            <span id="winRateVal" class="risk-metric-value">N/A</span>
+                        </div>
+                        <div class="risk-metric-card bg-slate-50">
+                            <span class="risk-metric-label">Prob. Loss</span>
+                            <span id="lossProbVal" class="risk-metric-value text-rose-600">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="advancedCharts" class="hidden">
+                    <div class="chart-container shadow-sm hover:shadow-md transition-shadow duration-300 h-[350px] sm:h-[450px]">
+                        <h3 class="text-xs font-bold text-gray-800 mb-3 uppercase tracking-wider absolute top-4 left-4 z-10">Proyeksi Ekuitas Real</h3>
+                        <canvas id="growthChart"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+                        <div class="chart-container !m-0 shadow-sm hover:shadow-md transition-shadow duration-300 h-[250px] sm:h-[300px]">
+                            <h3 class="text-xs font-bold text-gray-800 mb-3 uppercase tracking-wider">Analisis Drawdown</h3>
+                            <canvas id="drawdownChart"></canvas>
+                        </div>
+                        <div class="info-section !m-0 !p-4 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-x-auto h-[250px] sm:h-[300px] flex flex-col bg-white relative">
+                            <h3 class="text-xs font-bold text-gray-800 mb-3 uppercase tracking-wider sticky left-0 z-10 bg-white">Heatmap Pertumbuhan Bulanan</h3>
+                            <div id="heatmapContainer" class="flex-grow overflow-auto min-w-[500px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- ▼▼▼ FOOTER PROFESIONAL ▼▼▼ -->
+        <footer class="bg-[#0b1120] text-slate-400 mt-auto w-full border-t border-slate-800 relative z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-10 mb-10">
+                    <div class="col-span-1 sm:col-span-2 md:col-span-6 lg:col-span-5 text-center sm:text-left">
+                        <span class="font-light text-xl md:text-2xl tracking-widest text-white font-merriweather block mb-3 md:mb-4">LEODRA</span>
+                        <p class="text-xs leading-relaxed text-justify sm:text-left">
+                            Platform manajemen risiko dan analitik trading profesional. <br class="hidden lg:block mb-2">
+                            <strong class="text-slate-200">Keunggulan Eksklusif:</strong> Integrasi otomatis Backtest berbasis Excel (TF), presisi kustomisasi Take Profit/Risk Ratio dinamis, serta analitik probabilitas performa mendalam.
+                        </p>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-4 lg:col-span-5 flex flex-col items-center sm:items-start md:pl-8 lg:pl-16 w-full">
+                        <h4 class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-4 border-b border-slate-800 pb-2 w-full max-w-[200px] text-center sm:text-left">Menu Navigasi</h4>
+                        <div class="grid grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 text-[11px] font-bold tracking-wider uppercase text-slate-400 w-full max-w-[280px]">
+                            <a href="index.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Home</a>
+                            <a href="login.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Login</a>
+                            <a href="beranda.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Beranda</a>
+                            <a href="berandatrader.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Beranda Trader</a>
+                            <a href="berandaanalis.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Beranda Analis</a>
+                            <a href="edukasisystem.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Education for System</a>
+                            
+                            <a href="topanalisdantrader.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Top Analis Dan Trader</a>
+                            
+                            <!-- MENU AKTIF FOOTER: INVESTASI -->
+                            <a href="investasi.html" class="text-white flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-white"></i> <span class="border-b border-white pb-0.5">Investasi</span></a>
+                            
+                            <a href="backtest.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Backtest</a>
+                            <a href="langganan.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Langganan</a>
+                            <a href="pengaturan.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Pengaturan</a>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 lg:col-span-2 flex flex-col items-center sm:items-start md:items-end w-full">
+                        <h4 class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-4 border-b border-slate-800 pb-2 w-full max-w-[150px] md:max-w-[120px] text-center sm:text-left md:text-right">Terhubung</h4>
+                        <div class="flex flex-row md:flex-col items-center sm:items-start md:items-end gap-4 md:gap-3">
+                            <a href="#" class="flex items-center gap-2 hover:text-white transition-colors group">
+                                <span class="text-[11px] font-bold tracking-wider uppercase hidden md:block">Instagram</span>
+                                <i data-lucide="instagram" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110"></i>
+                            </a>
+                            <a href="https://wa.me/6281234567890" target="_blank" class="flex items-center gap-2 hover:text-white transition-colors group">
+                                <span class="text-[11px] font-bold tracking-wider uppercase hidden md:block">Support WA</span>
+                                <i data-lucide="message-circle" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-6 flex flex-col lg:flex-row justify-between items-center gap-4 md:gap-6 text-[10px] text-slate-500 text-center lg:text-left">
+                    <div class="max-w-4xl leading-relaxed">
+                        <strong class="text-slate-400">Peringatan Risiko:</strong> Trading pada instrumen keuangan membawa tingkat risiko tinggi. LEODRA adalah platform analitik dan penyedia layanan copytrade mandiri, bukan manajer investasi.
+                    </div>
+                    <div class="flex flex-col items-center lg:items-end gap-2 flex-shrink-0">
+                        <p>&copy; 2026 LEODRA Analytics. Hak Cipta Dilindungi.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let myChart = null; 
+        let drawdownChart = null; 
+        let startCapitalGlobal = 0;
+
+        const getLineAnimationConfig = (dataValues) => {
+            const totalDuration = 1200;
+            const len = dataValues.length || 1;
+            const delayBetweenPoints = totalDuration / len;
+            const previousY = (ctx) => {
+                if (ctx.index === 0) return ctx.chart.scales.y.getPixelForValue(dataValues[0]);
+                const meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+                if (meta.data[ctx.index - 1]) return meta.data[ctx.index - 1].getProps(['y'], true).y;
+                return ctx.chart.scales.y.getPixelForValue(dataValues[ctx.index]);
+            };
+            return {
+                x: { type: 'number', easing: 'linear', duration: delayBetweenPoints, from: NaN, delay(ctx) { if (ctx.type !== 'data' || ctx.xStarted) return 0; ctx.xStarted = true; return ctx.index * delayBetweenPoints; } },
+                y: { type: 'number', easing: 'linear', duration: delayBetweenPoints, from: previousY, delay(ctx) { if (ctx.type !== 'data' || ctx.yStarted) return 0; ctx.yStarted = true; return ctx.index * delayBetweenPoints; } }
+            };
+        };
+
+        function formatUSD(num) { return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num) + ' USD'; }
+        function formatK(num) { return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num); }
+
+        function calculateStandardDeviation(values) {
+            const n = values.length; if (n === 0) return 0;
+            const mean = values.reduce((a, b) => a + b, 0) / n;
+            return Math.sqrt(values.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n);
+        }
+        function calculateDownsideDeviation(values, target = 0) {
+            const n = values.length; if (n === 0) return 0;
+            const sumSq = values.map(x => Math.min(x - target, 0)).map(x => Math.pow(x, 2)).reduce((a, b) => a + b, 0);
+            return sumSq === 0 ? 0 : Math.sqrt(sumSq / n);
+        }
+        function average(arr) { return arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+        function renderChart(labels, data, secondDataset = null) {
+            const canvasEl = document.getElementById('growthChart');
+            const ctx = canvasEl.getContext('2d');
+            if (myChart) myChart.destroy(); 
+            
+            const pointColors = data.map(v => v >= startCapitalGlobal ? '#10b981' : '#dc2626');
+
+            const datasets = [{
+                label: 'Saldo Ekuitas Real (USD)', 
+                data: data, 
+                borderColor: '#10b981', 
+                borderWidth: 2, 
+                pointBackgroundColor: pointColors, 
+                pointBorderColor: pointColors, 
+                pointRadius: 1, 
+                pointHitRadius: 6, 
+                // PERBAIKAN: Mencegah grafik terpotong di tepi canvas
+                clip: false, 
+                fill: {
+                    target: { value: startCapitalGlobal }, 
+                    above: '#10b981', 
+                    below: '#dc2626'  
+                },
+                segment: {
+                    borderColor: ctx => {
+                        const p0 = ctx.p0.parsed.y;
+                        const p1 = ctx.p1.parsed.y;
+                        return (p0 < startCapitalGlobal && p1 < startCapitalGlobal) ? '#dc2626' : '#10b981';
+                    }
+                },
+                tension: 0 
+            }];
+
+            if (secondDataset) {
+                datasets.push({
+                    label: 'Flat (Tanpa Compounding)', data: secondDataset, borderColor: '#9ca3af', 
+                    backgroundColor: 'rgba(0,0,0,0)', borderWidth: 2, borderDash: [5, 5], pointRadius: 1, fill: false, tension: 0,
+                    // PERBAIKAN: Mencegah grafik flat terpotong
+                    clip: false
+                });
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'line', data: { labels: labels, datasets: datasets },
+                options: {
+                    animation: getLineAnimationConfig(data),
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    layout: {
+                        // PERBAIKAN: Padding margin perlindungan ekstra agar grafik aman dan simetris di semua batas layar
+                        padding: { top: 20, right: 30, bottom: 20, left: 15 }
+                    },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { 
+                        legend: { display: true },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.parsed.y; let grw = ((val - startCapitalGlobal) / startCapitalGlobal) * 100;
+                                    return (context.dataset.label || '') + ': ' + formatUSD(val) + ` (${grw >= 0 ? '+' : ''}${grw.toFixed(2)}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: { 
+                        x: {
+                            // PERBAIKAN: Jarak nafas pada titik ekstrim kanan agar label terakhir (tanggal) tidak kepotong layar
+                            offset: true,
+                            ticks: { padding: 12 }
+                        },
+                        y: { 
+                            // PERBAIKAN: Margin nafas pada titik tertinggi dan terendah Y
+                            grace: '10%',
+                            ticks: { padding: 12 }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'verticalCrosshair',
+                    afterDraw: chart => {
+                        if (chart.tooltip?._active && chart.tooltip._active.length) {
+                            const activePoint = chart.tooltip._active[0];
+                            const ctx = chart.ctx;
+                            const x = activePoint.element.x;
+                            const topY = chart.scales.y.top;
+                            const bottomY = chart.scales.y.bottom;
+
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.moveTo(x, topY);
+                            ctx.lineTo(x, bottomY);
+                            ctx.lineWidth = 1.5;
+                            ctx.strokeStyle = 'rgba(100, 116, 139, 0.6)'; 
+                            ctx.setLineDash([4, 4]); 
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }]
+            });
+
+            const clearChartInteraction = () => {
+                if (myChart) {
+                    myChart.setActiveElements([]);
+                    if (myChart.tooltip) {
+                        myChart.tooltip.setActiveElements([], {x: 0, y: 0});
+                    }
+                    myChart.update('none'); 
+                }
+            };
+
+            canvasEl.onmouseleave = clearChartInteraction;
+            canvasEl.ontouchcancel = clearChartInteraction;
+            canvasEl.ontouchend = () => { setTimeout(clearChartInteraction, 50); };
+        }
+
+        function renderDrawdownChart(labels, ddData) {
+            const ctx = document.getElementById('drawdownChart').getContext('2d');
+            if (drawdownChart) drawdownChart.destroy();
+            drawdownChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: [{ label: 'Drawdown %', data: ddData, borderColor: '#dc2626', backgroundColor: '#dc2626', borderWidth: 1, pointRadius: 0, fill: true, tension: 0, clip: false }] },
+                options: { 
+                    animation: getLineAnimationConfig(ddData),
+                    responsive: true, maintainAspectRatio: false, 
+                    layout: { padding: { top: 10, right: 30, bottom: 10, left: 10 } },
+                    scales: { 
+                        x: { offset: true, ticks: { padding: 10 } },
+                        y: { min: -100, max: 0, grace: '5%', ticks: { padding: 10 } } 
+                    }, 
+                    plugins: { legend: { display: false } } 
+                }
+            });
+        }
+
+        function renderHeatmap(monthlyData, years) {
+            const container = document.getElementById('heatmapContainer');
+            let html = '<table class="heatmap-table"><thead><tr><th class="bg-gray-50">Year</th>';
+            ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].forEach(m => html += `<th class="bg-gray-50">${m}</th>`);
+            html += '</tr></thead><tbody>';
+            years.forEach(year => {
+                html += `<tr><td class="font-bold bg-gray-50">${year}</td>`;
+                for(let m=0; m<12; m++) {
+                    const data = monthlyData[`${year}-${m}`];
+                    if(data && data.hasData) {
+                        const growth = data.actualGrowthPct; let color = growth >= 0 ? '#10b981' : '#dc2626';
+                        html += `<td style="background-color:${color}; color:white" class="heatmap-cell">${growth.toFixed(1)}%</td>`;
+                    } else html += `<td class="text-gray-300">-</td>`;
+                }
+                html += '</tr>';
+            });
+            container.innerHTML = html + '</tbody></table>';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) window.lucide.createIcons();
+            updateHeaderTime(); setInterval(updateHeaderTime, 1000); loadUserData();
+
+            const investmentAmountInput = document.getElementById('investmentAmount');
+            const pairSelect = document.getElementById('pairSelect');
+            const riskPerTradePercentageInput = document.getElementById('riskPerTradePercentage');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const csvFileInput = document.getElementById('csvFileInput');
+            const dropZone = document.getElementById('dropZone');
+            const resultsTableBody = document.getElementById('resultsTableBody');
+            
+            let uploadedCSVData = null; 
+            const STORAGE_KEY = "investCalcData_v14_auto_pair";
+
+            function calculateFromCSV() {
+                if (resultsTableBody) {
+                    resultsTableBody.innerHTML = '';
+                }
+                
+                let startCapital = parseFloat(investmentAmountInput.value); startCapitalGlobal = startCapital;
+                const riskPercent = parseFloat(riskPerTradePercentageInput.value);
+                const targetVal = document.getElementById('monthlyReturn').value;
+                let isCapped = targetVal && targetVal.trim() !== "" && parseFloat(targetVal) !== 0;
+                let targetPct = isCapped ? parseFloat(targetVal) : 0;
+                const showComp = document.getElementById('compareChartToggle').checked && isCapped;
+
+                const buckets = {};
+                uploadedCSVData.forEach(t => {
+                    const d = new Date(t['Close']); if(isNaN(d.getTime())) return;
+                    const k = `${d.getFullYear()}-${d.getMonth()}`; if(!buckets[k]) buckets[k] = []; buckets[k].push(t);
+                });
+
+                const monthlyData = {}; const labels = ['Start']; const dataPoints = [startCapital]; const compPoints = [startCapital]; const ddSeries = [0];
+                let currentBal = startCapital; let riskCap = startCapital; let flatBal = startCapital;
+                let peak = startCapital; let gMaxDD = 0; let gMaxDDVal = 0; let grossWin = 0; let grossLoss = 0; let winCount = 0; let totalCount = 0;
+                const returns = [];
+
+                const sortedKeys = Object.keys(buckets).sort((a,b) => { const [yA, mA] = a.split('-').map(Number); const [yB, mB] = b.split('-').map(Number); return yA-yB || mA-mB; });
+
+                sortedKeys.forEach(key => {
+                    const trades = buckets[key]; const [year, month] = key.split('-').map(Number);
+                    const monthStart = currentBal; const riskAmt = riskCap * (riskPercent/100); const shadowRisk = startCapital * (riskPercent/100);
+                    let mPnL = 0; let minL = 999; let maxL = 0; let mWin = 0; let mLoss = 0;
+
+                    trades.forEach(t => {
+                        const sl = parseFloat(t['Risk (Pips)']); const rwd = parseFloat(t['Reward (Pips)']);
+                        const pipV = (t['Aset']||"").toUpperCase().includes('NAS') ? 0.1 : 10;
+                        let lot = Math.max(0.01, riskAmt / (sl * pipV)); minL = Math.min(minL, lot); maxL = Math.max(maxL, lot);
+                        let pnl = 0, shd = 0;
+                        if(t['Status'].includes('WIN')) { pnl = lot * rwd * pipV; shd = (shadowRisk/(sl*pipV)) * rwd * pipV; grossWin += pnl; winCount++; mWin++; }
+                        else { pnl = -riskAmt; shd = -shadowRisk; grossLoss += riskAmt; mLoss++; }
+                        mPnL += pnl; totalCount++;
+                        currentBal += pnl; flatBal += shd;
+                        peak = Math.max(peak, currentBal);
+                        const curDDVal = peak - currentBal; const curDDPct = (curDDVal / peak) * 100;
+                        if(curDDPct > gMaxDD) { gMaxDD = curDDPct; gMaxDDVal = curDDVal; }
+                        labels.push(`${new Date(t['Close']).getDate()}/${month+1}`);
+                        dataPoints.push(currentBal); compPoints.push(flatBal); ddSeries.push(-curDDPct);
+                    });
+
+                    const actGrowth = (mPnL / startCapital) * 100; returns.push(actGrowth);
+                    if(isCapped) { if(mPnL > 0 && actGrowth >= targetPct) riskCap = currentBal; else if(mPnL < 0) riskCap = currentBal; }
+                    else riskCap = startCapital;
+                    monthlyData[key] = { year, month, endBalance: currentBal, actualGrowthPct: actGrowth, hasData: true, mPnL, mWin, mLoss, total: mWin+mLoss, maxDD: 0, lotSizes: [minL, maxL] };
+                });
+
+                document.getElementById('futureValue').textContent = formatUSD(currentBal);
+                document.getElementById('totalGrowth').textContent = `${((currentBal-startCapital)/startCapital*100).toFixed(2)}%`;
+                document.getElementById('maxDrawdownDisplay').textContent = `-${gMaxDD.toFixed(2)}%`;
+                document.getElementById('maxDrawdownValueDisplay').textContent = `-${formatUSD(gMaxDDVal)}`;
+                document.getElementById('riskCapitalDisplay').textContent = formatUSD(riskCap);
+                
+                document.getElementById('riskMetricsDashboard').classList.remove('hidden');
+                document.getElementById('advancedCharts').classList.remove('hidden');
+                
+                renderChart(labels, dataPoints, showComp ? compPoints : null);
+                renderDrawdownChart(labels, ddSeries); renderHeatmap(monthlyData, [...new Set(sortedKeys.map(k=>monthlyData[k].year))]);
+            }
+
+            csvFileInput.addEventListener('change', e => {
+                const f = e.target.files[0]; if(!f) return;
+                const r = new FileReader();
+                r.onload = ev => {
+                    const d = new Uint8Array(ev.target.result); const wb = XLSX.read(d, {type:'array'});
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const raw = XLSX.utils.sheet_to_json(ws, {defval:""});
+                    uploadedCSVData = raw.map(row => ({
+                        'Aset': String(row['Aset']||''), 'Status': String(row['Status']||'').toUpperCase(),
+                        'Risk (Pips)': parseFloat(row['Risk (Pips)']), 'Reward (Pips)': parseFloat(row['Reward (Pips)']),
+                        'Close': row['Close']
+                    })).filter(r => r.Status && r.Close && !isNaN(r['Risk (Pips)']));
+                    uploadedCSVData.sort((a,b) => new Date(a.Close) - new Date(b.Close));
+                    if(uploadedCSVData.length) { dropZone.classList.add('uploaded'); calculateFromCSV(); }
+                };
+                r.readAsArrayBuffer(f);
+            });
+
+            calculateBtn.addEventListener('click', calculateFromCSV);
+        });
+
+        function updateHeaderTime() {
+            const n = new Date();
+            document.getElementById("headerRealTimeClock").textContent = n.toLocaleTimeString("id-ID", {hour12:false}).replace(/\./g,':');
+            document.getElementById("headerRealTimeDate").textContent = n.toLocaleDateString("id-ID", {day:"numeric", month:"short", year:"numeric"});
+        }
+        function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('translate-x-full'); }
+        function loadUserData() {
+            const u = JSON.parse(localStorage.getItem("user") || "{}");
+            const n = u.name || "Guest";
+            document.getElementById('desktop-user-info').textContent = n;
+            document.getElementById('mobile-user-name').textContent = n;
+        }
+        function logout() { localStorage.removeItem("user"); location.reload(); }
+    </script>
+</body>
+</html>

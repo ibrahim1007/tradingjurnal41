@@ -1,0 +1,2236 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEODRA</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts (Dikembalikan untuk memuat font elegan Merriweather) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js (BARU: Untuk Grafik Kurva Eksponensial) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- GLOBAL SETTINGS (ZOOM OUT EFFECT) --- */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        html { 
+            font-size: 14px; 
+            scroll-padding-top: 120px; 
+        }
+
+        @media (min-width: 1024px) { 
+            body { 
+                zoom: 0.85; 
+                -moz-transform: scale(0.85);
+                -moz-transform-origin: top center;
+            }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #0f0f0f;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* --- CORPORATE TYPOGRAPHY OVERRIDES --- */
+        /* Mempertahankan font standar korporat untuk isi Body, namun MENGEMBALIKAN font elegan khusus untuk Header & Footer */
+        .font-serif { 
+            font-family: 'Playfair Display', serif; 
+        }
+        
+        .font-merriweather { 
+            font-family: 'Merriweather', serif !important; 
+            /* Desain klasik dan mewah untuk Logo LEODRA dikembalikan sepenuhnya */
+        }
+
+        /* --- HEADER & SEARCH STYLES --- */
+        .search-input {
+            width: 100%;
+            max-width: 180px;
+            padding: 8px 12px;
+            border-radius: 0;
+            border: 1px solid #e5e5e5;
+            font-size: 0.95rem;
+            color: #333;
+            transition: all 0.3s ease;
+            background-color: #f8f8f8;
+        }
+        @media (min-width: 768px) {
+            .search-input:focus {
+                width: 240px;
+                outline: none;
+                border-color: #000;
+                background-color: #fff;
+                box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+            }
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            padding: 1rem;
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal-content {
+            background-color: white; padding: 2rem md:padding: 3rem; 
+            border-radius: 0;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2); max-width: 100%; width: 500px;
+            position: relative; transform: scale(0.95); transition: all 0.3s ease;
+        }
+        .modal-overlay.open .modal-content { transform: scale(1); }
+
+        /* Mobile Nav Styles */
+        .mobile-nav-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: flex-start; 
+            align-items: center;
+            padding-top: 100px; 
+            z-index: 999; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: rgba(255,255,255,0.98);
+        }
+        .mobile-nav-overlay.open { transform: translateX(0); }
+        .mobile-nav-overlay ul { list-style: none; padding: 0; margin-top: 1rem; width: 100%; }
+        .mobile-nav-overlay ul li { margin: 0; opacity: 0; transform: translateY(20px); transition: 0.5s ease; } 
+        .mobile-nav-overlay.open ul li { opacity: 1; transform: translateY(0); }
+
+        /* --- TYPOGRAPHY (FLUID SIZING FOR RESPONSIVENESS) --- Dipertipis */
+        .text-hero { font-size: clamp(2.75rem, 8vw, 5rem); line-height: 1.1; }
+        .text-section { font-size: clamp(1.75rem, 4vw, 3.5rem); line-height: 1.1; }
+
+        /* --- ANIMATIONS --- */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* --- TICKER / SCROLLING OTOMATIS --- */
+        .ticker-container {
+            width: 100%; 
+            overflow: hidden; 
+            background-color: #f4f4f5; 
+            color: #171717; 
+            padding: 1.8rem 0; 
+            display: flex; 
+            user-select: none; 
+            position: relative; 
+            z-index: 40;
+            border-top: 1px solid #e5e5e5;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .ticker-wrapper { 
+            display: flex; 
+            width: max-content; 
+            animation: scroll 40s linear infinite; 
+            will-change: transform;
+        }
+        @keyframes scroll { 
+            0% { transform: translate3d(0, 0, 0); } 
+            100% { transform: translate3d(-50%, 0, 0); } 
+        }
+        .ticker-item { 
+            flex-shrink: 0; 
+            padding: 0 4rem; 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.15em; 
+            font-weight: 400; /* Dipertipis */
+            display: flex; 
+            align-items: center; 
+            gap: 1.25rem; 
+        }
+        .ticker-item i {
+            color: #000000;
+            width: 1.5rem;
+            height: 1.5rem;
+            stroke-width: 1.5px; /* Dipertipis */
+        }
+
+        /* --- VISUAL EFFECTS --- */
+        .video-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.5; filter: grayscale(100%); }
+        .matrix-bg { background-color: #000; background-image: linear-gradient(0deg, transparent 24%, rgba(0, 255, 0, .3) 25%, rgba(0, 255, 0, .3) 26%, transparent 27%, transparent 74%, rgba(0, 255, 0, .3) 75%, rgba(0, 255, 0, .3) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0, 255, 0, .3) 25%, rgba(0, 255, 0, .3) 26%, transparent 27%, transparent 74%, rgba(0, 255, 0, .3) 75%, rgba(0, 255, 0, .3) 76%, transparent 77%, transparent); background-size: 50px 50px; }
+
+        /* --- COMPONENTS --- Dipertipis */
+        .btn-primary { background: #000; color: #fff; padding: 0.85rem 2rem; border-radius: 0; font-weight: 400; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; text-align: center; }
+        .btn-primary:hover { background: #222; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+        
+        .apple-card { background: #f5f5f7; border-radius: 0; transition: transform 0.5s ease, box-shadow 0.5s ease; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); }
+        .apple-card:hover { transform: scale(1.02); box-shadow: 0 30px 60px rgba(0,0,0,0.1); background: #ffffff; border-color: rgba(0,0,0,0.1); }
+
+        /* --- SHARP EDGES OVERRIDE --- */
+        .rounded, .rounded-sm, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-full {
+            border-radius: 0 !important;
+        }
+        .w-2\.h-2, .w-1\.5\.h-1\.5, .wa-circle { border-radius: 9999px !important; }
+        .wa-tooltip { border-radius: 0.5rem !important; } 
+
+        /* --- SPECIAL EFFECTS --- */
+        .glitch-text { position: relative; display: inline-block; color: white; }
+        .glitch-text::before, .glitch-text::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; }
+        .glitch-text::before { left: 2px; text-shadow: -2px 0 #ff00c1; clip-path: inset(44% 0 61% 0); animation: glitch-anim-1 4s infinite linear alternate-reverse; }
+        .glitch-text::after { left: -2px; text-shadow: -2px 0 #00fff9; clip-path: inset(54% 0 10% 0); animation: glitch-anim-2 4s infinite linear alternate-reverse; }
+        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); } 20% { clip-path: inset(60% 0 10% 0); } 40% { clip-path: inset(40% 0 50% 0); } 60% { clip-path: inset(80% 0 5% 0); } 80% { clip-path: inset(10% 0 70% 0); } 100% { clip-path: inset(30% 0 20% 0); } }
+        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); } 20% { clip-path: inset(80% 0 5% 0); } 40% { clip-path: inset(30% 0 20% 0); } 60% { clip-path: inset(15% 0 80% 0); } 80% { clip-path: inset(55% 0 10% 0); } 100% { clip-path: inset(40% 0 30% 0); } }
+        
+        .crosshair-target { position: absolute; width: 100px; height: 100px; border: 1px solid rgba(255, 0, 0, 0.5); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: breathe 4s ease-in-out infinite; pointer-events: none; }
+        .crosshair-target::before { content: ''; position: absolute; background: red; top: 50%; left: 0; width: 100%; height: 1px; transform: translateY(-50%); }
+        .crosshair-target::after { content: ''; position: absolute; background: red; left: 50%; top: 0; height: 100%; width: 1px; transform: translateX(-50%); }
+        @keyframes breathe { 0%, 100% { width: 100px; height: 100px; opacity: 0.5; } 50% { width: 90px; height: 90px; opacity: 1; } }
+        
+        .scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, transparent, #22c55e, transparent); box-shadow: 0 0 10px #22c55e; animation: scan 3s linear infinite; z-index: 20; }
+        @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        
+        #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+        /* --- APPLE STYLE MEGA MENU --- */
+        .nav-overlay {
+            position: fixed; inset: 0; top: 80px;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        @media (min-width: 768px) { .nav-overlay { top: 96px; } }
+        .nav-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .mega-menu-container {
+            position: absolute; top: 100%; left: 0; width: 100%;
+            background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            overflow: hidden; max-height: 0; opacity: 0; border-bottom: 1px solid transparent;
+            transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, border-color 0.4s ease;
+        }
+        .mega-menu-container.open { max-height: 500px; opacity: 1; border-bottom-color: #e5e5e5; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="messageModalTitle">
+        <div class="modal-content p-6 md:p-12">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="messageModalTitle" class="text-lg md:text-xl font-serif text-gray-900 font-normal">Pesan Sistem</h3>
+                <button onclick="closeMessageModal()" class="text-gray-400 hover:text-black text-3xl transition">&times;</button>
+            </div>
+            <div id="messageModalContent" class="text-center text-gray-600 space-y-4 mb-8 text-sm md:text-base font-light">
+                <!-- Message inserted via JS -->
+            </div>
+            <div class="flex justify-center">
+                <button onclick="closeMessageModal()" class="btn-primary w-full max-w-xs">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation Overlay -->
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay md:hidden bg-white/95 backdrop-blur-xl overflow-y-auto">
+        <button class="absolute top-6 right-6 cursor-pointer text-black text-4xl hover:rotate-90 transition duration-300" onclick="toggleMobileMenu()">&times;</button>
+        
+        <div class="w-full px-8 pb-12 mt-4 max-w-sm mx-auto">
+            <ul class="flex flex-col w-full text-left">
+                <!-- Data Baru (Model Akordeon) -->
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-black focus:outline-none font-medium" onclick="toggleMobileAccordion('mobile-home')">
+                        Home <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-black rotate-180" id="icon-mobile-home"></i>
+                    </button>
+                    <div id="mobile-home" class="flex flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="index.html" class="block font-medium text-black border-l-2 border-black pl-2" onclick="toggleMobileMenu()">Halaman awal</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-solusi')">
+                        Solusi <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-solusi"></i>
+                    </button>
+                    <div id="mobile-solusi" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="belajardanmenghasilkan.html" class="block hover:text-black font-light">Belajar dan menghasilkan</a>
+                        <a href="untukbisnis.html" class="block hover:text-black font-light">Untuk bisnis</a>
+                        <a href="untukpendidikan.html" class="block hover:text-black font-light">Untuk pendidikan</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-perusahaan')">
+                        Perusahaan <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-perusahaan"></i>
+                    </button>
+                    <div id="mobile-perusahaan" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="tentangleodra.html" class="block hover:text-black font-light">Tentang Leodra</a>
+                        <a href="visimisi.html" class="block hover:text-black font-light">Visi & Misi</a>
+                        <a href="nilainilaileodra.html" class="block hover:text-black font-light">Nilai - nilai Leodra</a>
+                    </div>
+                </li>
+                <li class="border-b border-gray-200">
+                    <button class="w-full flex justify-between items-center py-4 text-lg text-slate-800 focus:outline-none font-normal" onclick="toggleMobileAccordion('mobile-bantuan')">
+                        Bantuan <i data-lucide="chevron-down" class="w-4 h-4 transition-transform text-slate-500" id="icon-mobile-bantuan"></i>
+                    </button>
+                    <div id="mobile-bantuan" class="hidden flex-col gap-4 pb-4 pl-4 text-sm text-slate-600">
+                        <a href="pusatbantuanumum.html" class="block hover:text-black font-light">Pusat Bantuan Umum</a>
+                    </div>
+                </li>
+
+                <!-- Data Lama -->
+                <li class="border-b border-gray-200"><a href="#vision" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Prinsip Dasar</a></li>
+                <li class="border-b border-gray-200"><a href="#stats" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Fakta Pasar</a></li>
+                <li class="border-b border-gray-200"><a href="#prob" class="block py-4 text-lg text-slate-800 hover:text-slate-500 font-light" onclick="toggleMobileMenu()">Sistem</a></li>
+            </ul>
+
+            <!-- Button Masuk -->
+            <div class="mt-8">
+                <a href="login.html" class="bg-black text-white px-8 w-full h-12 flex items-center justify-center rounded-none text-base font-light hover:bg-gray-800 transition">Masuk</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- PARTICLE BACKGROUND -->
+    <div id="particles-js"></div>
+
+    <!-- APPLE STYLE OVERLAY -->
+    <div id="nav-overlay" class="nav-overlay"></div>
+
+    <!-- ▼▼▼ HEADER UTAMA ▼▼▼ -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full pl-4 md:pl-8 pr-4 md:pr-0 flex items-center justify-between gap-2">
+            
+            <!-- KIRI: LOGO -->
+            <div class="flex items-center h-full">
+                <div class="flex items-center flex-shrink-0">
+                    <a href="index.html" class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather hover:text-gray-700 transition">LEODRA</a>
+                </div>
+            </div>
+            
+            <!-- Hamburger Menu (Mobile Only) -->
+            <button class="md:hidden p-2 text-black" onclick="toggleMobileMenu()">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- KANAN: SEMUA MENU, TANGGAL & ACTION -->
+            <div class="hidden md:flex items-center justify-end flex-shrink-0 gap-4 lg:gap-6 h-full">
+                
+                <!-- Navigasi Kanan (Gabungan Menu Baru & Lama) dengan Jarak Proporsional -->
+                <nav class="flex items-center gap-4 lg:gap-6 text-sm lg:text-base text-slate-800 font-normal h-full">
+                    <!-- Data Baru -->
+                    <div class="h-full flex items-center nav-item-wrapper active-page-wrapper" data-menu="home">
+                        <span class="nav-link py-1 border-b-[3px] border-black text-black transition cursor-default font-normal">Home</span>
+                    </div>
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="solusi">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Solusi</span>
+                    </div>
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="perusahaan">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Perusahaan</span>
+                    </div>
+                    <div class="h-full flex items-center nav-item-wrapper" data-menu="bantuan">
+                        <span class="nav-link py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-default font-normal">Bantuan</span>
+                    </div>
+                    
+                    <!-- Data Lama -->
+                    <a href="#vision" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Prinsip Dasar</a>
+                    <a href="#stats" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Fakta Pasar</a>
+                    <a href="#prob" class="nav-link-scroll py-1 border-b-[3px] border-transparent hover:text-slate-400 transition cursor-pointer flex items-center h-full font-normal">Sistem</a>
+                </nav>
+                
+                <div class="w-px h-6 bg-gray-300"></div>
+                
+                <span id="headerRealTimeDate" class="text-slate-800 text-sm lg:text-base font-normal whitespace-nowrap" style="font-family: 'Inter', sans-serif;">
+                    -- -- ----
+                </span>
+                
+                <a href="login.html" class="bg-black text-white px-6 lg:px-10 h-full flex items-center justify-center rounded-none text-sm lg:text-base font-light hover:bg-gray-800 transition-all whitespace-nowrap border-b-[3px] border-transparent hover:border-white">Masuk</a>
+            </div>
+        </div>
+
+        <!-- MEGA MENU PANEL (Apple Style Dropdown) -->
+        <div id="mega-menu" class="mega-menu-container">
+            <div class="max-w-[1400px] mx-auto px-6 md:px-12 py-10 transition-opacity duration-300 opacity-0" id="mega-menu-content">
+                <!-- Konten akan dimasukkan otomatis via Javascript saat Hover -->
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="relative w-full min-h-[90vh] md:h-screen flex flex-col justify-end overflow-hidden pb-10 md:pb-12 pt-24">
+        <!-- Gambar latar belakang (Kesan Perusahaan Eksklusif, Institusional Tier-1, Megah & Terang) -->
+        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop" alt="LEODRA Exclusive Corporate Headquarters" class="absolute inset-0 w-full h-full object-cover z-[-2] object-center grayscale-[15%] opacity-100">
+        
+        <!-- Overlay Gradien disesuaikan: Bagian atas/tengah transparan agar kemegahan gedung terlihat jelas, bawah tetap digradasi gelap agar teks terbaca tajam -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#000000] via-black/40 to-transparent z-[-1]"></div>
+        
+        <!-- Wrapper teks: Diposisikan presisi ke bawah di semua device (termasuk HP) dengan gap konsisten -->
+        <div class="relative z-10 text-center md:text-left px-6 md:px-12 lg:px-20 w-full max-w-[1400px] mx-auto mb-0">
+            
+            <!-- Warna teks diubah menjadi putih dan abu-abu terang -->
+            <h1 class="text-4xl md:text-4xl lg:text-5xl font-light mb-4 md:mb-6 text-white leading-tight reveal" style="transition-delay: 0.1s;">
+                Mastering <br class="md:hidden"> <span class="italic text-gray-200">The Probability.</span>
+            </h1>
+            
+            <!-- Teks paragraf dipertipis menjadi font-light agar lebih elegan -->
+            <p class="text-sm md:text-lg text-gray-200 max-w-2xl mx-auto md:mx-0 mb-4 md:mb-6 font-light reveal" style="transition-delay: 0.2s;">
+                Kami mengubah kekacauan pasar menjadi struktur yang terukur. <br class="hidden md:block">Infrastruktur trading institusional untuk pertumbuhan aset jangka panjang.
+            </p>
+            
+        </div>
+    </section>
+
+    <!-- TICKER TAPE (MINIMALIS & RAPI) -->
+    <div class="ticker-container">
+        <div class="ticker-wrapper">
+            <!-- Group 1 -->
+            <div class="ticker-item"><i data-lucide="activity"></i> <span>Precision Analysis</span></div>
+            <div class="ticker-item"><i data-lucide="shield"></i> <span>Capital Protection</span></div>
+            <div class="ticker-item"><i data-lucide="trending-up"></i> <span>Compound Growth</span></div>
+            <div class="ticker-item"><i data-lucide="database"></i> <span>Institutional Data</span></div>
+            <div class="ticker-item"><i data-lucide="lock"></i> <span>Risk Management</span></div>
+            <div class="ticker-item"><i data-lucide="brain"></i> <span>Psychology Mastery</span></div>
+            <div class="ticker-item"><i data-lucide="globe"></i> <span>Global Macro</span></div>
+            
+            <!-- Group 2 (Duplicate for seamless loop) -->
+            <div class="ticker-item"><i data-lucide="activity"></i> <span>Precision Analysis</span></div>
+            <div class="ticker-item"><i data-lucide="shield"></i> <span>Capital Protection</span></div>
+            <div class="ticker-item"><i data-lucide="trending-up"></i> <span>Compound Growth</span></div>
+            <div class="ticker-item"><i data-lucide="database"></i> <span>Institutional Data</span></div>
+            <div class="ticker-item"><i data-lucide="lock"></i> <span>Risk Management</span></div>
+            <div class="ticker-item"><i data-lucide="brain"></i> <span>Psychology Mastery</span></div>
+            <div class="ticker-item"><i data-lucide="globe"></i> <span>Global Macro</span></div>
+        </div>
+    </div>
+
+    <!-- SECTION 0: THE PROLOGUE -->
+    <section id="prologue" class="py-16 md:py-24 bg-white flex justify-center items-center min-h-[40vh]">
+        <div class="container mx-auto px-6 text-center max-w-4xl fade-in-up">
+            <p class="text-[10px] md:text-xs font-medium tracking-[0.4em] text-gray-400 uppercase mb-6 md:mb-8">Institutional Grade Intelligence</p>
+            <h2 class="text-xl md:text-4xl font-serif font-light leading-tight mb-8 md:mb-10">
+                "We don't predict the market. <br class="hidden md:block"> We <span class="italic text-gray-900 font-normal border-b border-black">audit</span> our reaction to it."
+            </h2>
+            <div class="w-px h-12 md:h-24 bg-gray-200 mx-auto"></div>
+        </div>
+    </section>
+
+    <!-- SECTION 1: THE PHILOSOPHY (Terhubung dengan Menu Prinsip Dasar) -->
+    <section id="vision" class="py-16 md:py-32 bg-white border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-24 items-center text-center md:text-left">
+                <div class="reveal"><h2 class="text-section mb-6 md:mb-8 font-light text-black">Bukan Sekadar Angka. <br> <span class="text-gray-400 italic">Ini Tentang Struktur.</span></h2></div>
+                <div class="reveal" style="transition-delay: 0.1s;">
+                    <p class="text-sm md:text-lg text-gray-600 leading-relaxed font-light mb-6">Banyak orang terjun ke pasar finansial dengan harapan, namun pulang dengan kekecewaan. Mengapa? Karena mereka tidak memiliki peta.</p>
+                    <p class="text-sm md:text-lg text-gray-600 leading-relaxed font-light"><strong class="font-medium text-black">LEODRA</strong> hadir untuk memberikan cermin kejujuran. Sistem jurnal profesional kami memperlihatkan kebiasaan Anda, menghapus bias emosional, dan mengubah keputusan impulsif menjadi strategi bisnis yang matang.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ▼▼▼ 6 SECTION INSTITUTIONAL CORPORATE GRADE (NEW) ▼▼▼ -->
+
+    <!-- CORPORATE GALLERY UNTUK TRUST INVESTOR BESAR (DIPINDAHKAN KE SINI) -->
+    <section class="py-16 md:py-32 bg-white text-black relative overflow-hidden border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-6 relative z-10">
+            <div class="text-center mb-10 reveal">
+                <i data-lucide="building-2" class="w-8 h-8 md:w-10 md:h-10 mx-auto text-gray-400 mb-4"></i>
+                <h3 class="text-xl md:text-2xl font-normal text-black mb-4">Transparansi Operasional Perusahaan</h3>
+                <p class="text-xs md:text-sm text-gray-500 font-light max-w-2xl mx-auto leading-relaxed">
+                    Investor besar tidak berinvestasi pada janji, mereka berinvestasi pada fondasi institusi yang nyata. Kami membuka akses transparansi terhadap tata kelola dan operasi standar global LEODRA.
+                </p>
+            </div>
+            
+            <!-- GRID DENGAN ANIMASI INDIVIDUAL -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Galeri 1: Arsitektur Privasi Eksklusif (Teknologi Data - Gambar Diperbarui) -->
+                <div class="group relative overflow-hidden bg-gray-100 aspect-[4/3] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop" alt="Exclusive Privacy Architecture" class="w-full h-full object-cover grayscale opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left transform translate-y-2 group-hover:translate-y-0 transition duration-500">
+                        <p class="text-white text-sm md:text-base font-medium tracking-wide mb-1">Arsitektur Privasi Eksklusif</p>
+                        <p class="text-gray-400 text-[9px] md:text-[10px] font-mono uppercase tracking-widest">Isolasi Data Skala Kustodian</p>
+                    </div>
+                </div>
+                
+                <!-- Galeri 2: Executive Wealth Pavilion (Teknologi Data) -->
+                <div class="group relative overflow-hidden bg-gray-100 aspect-[4/3] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=2070&auto=format&fit=crop" alt="Executive Wealth Pavilion" class="w-full h-full object-cover grayscale opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left transform translate-y-2 group-hover:translate-y-0 transition duration-500">
+                        <p class="text-white text-sm md:text-base font-medium tracking-wide mb-1">Executive Wealth Pavilion</p>
+                        <p class="text-gray-400 text-[9px] md:text-[10px] font-mono uppercase tracking-widest">Fasilitas Konciyerge Privat</p>
+                    </div>
+                </div>
+                
+                <!-- Galeri 3: Quantitative Monitoring -->
+                <div class="group relative overflow-hidden bg-gray-100 aspect-[4/3] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop" alt="Quantitative Desk" class="w-full h-full object-cover grayscale opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left transform translate-y-2 group-hover:translate-y-0 transition duration-500">
+                        <p class="text-white text-sm md:text-base font-medium tracking-wide mb-1">Quantitative Desk</p>
+                        <p class="text-gray-400 text-[9px] md:text-[10px] font-mono uppercase tracking-widest">Pemantauan Algoritma 24/5</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center reveal" style="transition-delay: 0.6s;">
+                <p class="text-[9px] md:text-[10px] font-mono text-gray-400 tracking-widest uppercase">* Seluruh operasional diawasi dengan protokol kepatuhan (Compliance) kelas dunia.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 1. CORPORATE ADVANTAGES -->
+    <section class="py-16 md:py-32 bg-white text-black relative overflow-hidden border-b border-gray-200">
+        <!-- Background Animation -->
+        <div class="absolute top-[20%] left-0 w-full overflow-hidden h-10 opacity-30 pointer-events-none">
+            <div class="data-stream-line" style="top: 10px; animation-duration: 2s; animation-delay: 0s; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.15), transparent);"></div>
+            <div class="data-stream-line" style="top: 20px; animation-duration: 3s; animation-delay: 1s; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.15), transparent);"></div>
+            <div class="data-stream-line" style="top: 30px; animation-duration: 2.5s; animation-delay: 0.5s; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.15), transparent);"></div>
+        </div>
+        <div class="max-w-[1200px] mx-auto px-6 text-center relative z-10">
+            <div class="reveal">
+                <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-6 block">The Leodra Moat</span>
+                <h2 class="text-section mb-6 leading-tight font-light">Keunggulan Struktural <br class="hidden md:block"> <span class="italic text-gray-400">LEODRA.</span></h2>
+                <p class="text-sm md:text-lg text-gray-600 font-light leading-relaxed max-w-3xl mx-auto mb-12">
+                    Kami tidak menjual janji manis ritel. LEODRA membangun sebuah ekosistem eksklusif di mana modal besar dilindungi oleh arsitektur manajemen risiko absolut, analitik probabilistik, dan tata kelola kuantitatif. Ini adalah <em class="text-gray-500">suaka sejati</em> bagi investor institusional.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-8">
+                <div class="border border-gray-200 p-6 md:p-8 text-center bg-gray-50 hover:bg-black hover:text-white transition duration-500 shadow-sm group flex flex-col items-center justify-center reveal" style="transition-delay: 0.1s;">
+                    <i data-lucide="shield" class="w-8 h-8 text-black group-hover:text-white mb-4 transition-colors duration-500"></i>
+                    <p class="text-lg md:text-xl font-normal text-black group-hover:text-white mb-3">Proteksi Modal</p>
+                    <p class="text-[10px] md:text-xs text-gray-500 group-hover:text-gray-300 font-light leading-relaxed">Fokus utama kami adalah pelestarian kekayaan lintas generasi sebelum memikirkan ekspansi profitabilitas.</p>
+                </div>
+                <div class="border border-gray-200 p-6 md:p-8 text-center bg-gray-50 hover:bg-black hover:text-white transition duration-500 shadow-sm group flex flex-col items-center justify-center reveal" style="transition-delay: 0.2s;">
+                    <i data-lucide="cpu" class="w-8 h-8 text-black group-hover:text-white mb-4 transition-colors duration-500"></i>
+                    <p class="text-lg md:text-xl font-normal text-black group-hover:text-white mb-3">Analitik Kuantitatif</p>
+                    <p class="text-[10px] md:text-xs text-gray-500 group-hover:text-gray-300 font-light leading-relaxed">Meninggalkan tebakan amatir, beralih penuh pada eksekusi keputusan berbasis probabilitas matematis murni.</p>
+                </div>
+                <div class="border border-gray-200 p-6 md:p-8 text-center bg-gray-50 hover:bg-black hover:text-white transition duration-500 shadow-sm group flex flex-col items-center justify-center reveal" style="transition-delay: 0.3s;">
+                    <i data-lucide="lock" class="w-8 h-8 text-black group-hover:text-white mb-4 transition-colors duration-500"></i>
+                    <p class="text-lg md:text-xl font-normal text-black group-hover:text-white mb-3">Privasi Arsitektur</p>
+                    <p class="text-[10px] md:text-xs text-gray-500 group-hover:text-gray-300 font-light leading-relaxed">Data strategi dan portofolio Anda dilindungi oleh standar enkripsi kelas militer tanpa kompromi.</p>
+                </div>
+                <div class="border border-gray-200 p-6 md:p-8 text-center bg-gray-50 hover:bg-black hover:text-white transition duration-500 shadow-sm group flex flex-col items-center justify-center reveal" style="transition-delay: 0.4s;">
+                    <i data-lucide="landmark" class="w-8 h-8 text-black group-hover:text-white mb-4 transition-colors duration-500"></i>
+                    <p class="text-lg md:text-xl font-normal text-black group-hover:text-white mb-3">Ekosistem Tertutup</p>
+                    <p class="text-[10px] md:text-xs text-gray-500 group-hover:text-gray-300 font-light leading-relaxed">Lingkungan elit yang diisolasi ketat dari kebisingan, euforia massal, dan kepanikan pasar ritel.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. BESPOKE INSTITUTIONAL VALUE (Nilai Tambah Eksklusif Institusi via Gambar) -->
+    <section class="py-16 md:py-32 bg-gray-50 text-black border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+            <!-- Header Section -->
+            <div class="text-center md:text-left mb-12 md:mb-16 reveal">
+                <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-4 block">Unrivaled Value Proposition</span>
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <h2 class="text-section leading-tight font-light mb-0 text-black">Asymmetric <br><span class="italic text-gray-400 border-b border-gray-300 pb-1">Institutional Edge.</span></h2>
+                    <p class="text-sm md:text-base text-gray-600 font-light max-w-xl text-left border-l-2 border-gray-300 pl-4 md:pl-6">
+                        Perusahaan ritel menawarkan platform massal (<em class="text-gray-500">one-size-fits-all</em>). LEODRA merekayasa infrastruktur yang secara spesifik dikustomisasi menyesuaikan mandat modal institusi Anda. <strong class="text-black font-medium">Kami memberikan nilai tambah yang broker lain sembunyikan.</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Image Grid Data (Interaktif) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Card 1: Risk Concierge -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <img src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?q=80&w=1973&auto=format&fit=crop" alt="Dedicated Risk Concierge" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="gem" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Dedicated Risk Concierge</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Alokasi analis kuantitatif privat yang bertugas secara eksklusif mendesain parameter perlindungan modal sesuai selera risiko institusi Anda.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: FIX API -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop" alt="FIX API & Co-Location" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="network" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">FIX API & Co-Location</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Bypass antarmuka ritel. Dapatkan akses langsung ke server <em>matching engine</em> kami untuk eksekusi algoritma berkecepatan sub-milidetik tanpa latensi.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Algorithm Tuning -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2000&auto=format&fit=crop" alt="Bespoke Algorithm Tuning" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="binary" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Bespoke Algorithm Tuning</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Kami tidak sekadar menyediakan data. Tim insinyur kami mengkustomisasi model matematis spesifik untuk menyempurnakan strategi <em>Alpha</em> portofolio Anda.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. THE QUANTUM CORE (Pemrosesan Algoritma Kuantitatif via Gambar) -->
+    <section class="py-24 md:py-40 bg-gray-50 text-black relative overflow-hidden border-b border-gray-200">
+        <!-- Full Animated Background -->
+        <div class="absolute inset-0 quant-grid pointer-events-none"></div>
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <!-- Glowing Nodes -->
+            <div class="w-1 h-1 bg-black rounded-full data-node absolute" style="top: 30%; left: 20%; animation-delay: 0s;"></div>
+            <div class="w-2 h-2 bg-black rounded-full data-node absolute" style="top: 60%; left: 70%; animation-delay: 1s;"></div>
+            <div class="w-1.5 h-1.5 bg-black rounded-full data-node absolute" style="top: 40%; left: 80%; animation-delay: 2s;"></div>
+            <div class="w-1 h-1 bg-black rounded-full data-node absolute" style="top: 70%; left: 30%; animation-delay: 0.5s;"></div>
+            
+            <div class="w-64 h-64 md:w-[500px] md:h-[500px] border border-gray-200 rounded-full absolute animate-[spin_40s_linear_infinite]"></div>
+            <div class="w-48 h-48 md:w-[350px] md:h-[350px] border border-gray-300 rounded-full absolute animate-[spin_30s_linear_infinite_reverse]"></div>
+        </div>
+        
+        <div class="max-w-3xl mx-auto px-6 text-center relative z-10 reveal">
+            <i data-lucide="cpu" class="w-12 h-12 md:w-16 md:h-16 mx-auto text-black mb-8 opacity-80 animate-pulse"></i>
+            <span class="text-[9px] md:text-[10px] font-mono tracking-[0.4em] text-gray-500 uppercase mb-4 block">Algorithmic Processing</span>
+            <h2 class="text-section leading-tight font-light mb-6 text-black">The Quantum <br class="hidden md:block"> <span class="italic text-gray-400">Core.</span></h2>
+            <p class="text-sm md:text-lg text-gray-600 font-light leading-relaxed mb-8">
+                Di balik antarmuka minimalis kami, terdapat mesin analitik kelas institusi yang beroperasi jauh di atas standar ritel. Kami mengubah derau pasar (*market noise*) menjadi probabilitas yang dapat dieksekusi oleh modal besar.
+            </p>
+        </div>
+
+        <!-- Image Grid Data (Interaktif) -->
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12 mt-16 md:mt-24 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Card 1: Predictive Order Flow -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[4/5] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2064&auto=format&fit=crop" alt="Predictive Order Flow" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="radar" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Predictive Order Flow</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Trader ritel menggunakan indikator tertinggal (lagging). Core kami memproses agregasi pesanan Tier-1 secara <em>real-time</em> untuk memetakan probabilitas aliran likuiditas institusi sebelum pergerakan harga terjadi.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Dark Pool Routing -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[4/5] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1618044733300-9472054094ee?q=80&w=2071&auto=format&fit=crop" alt="Dark Pool Routing" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="eye-off" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Dark Pool Routing</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Pesanan jutaan dolar memicu kepanikan pasar. Algoritma kami memecah dan merutekan pesanan blok besar Anda melalui likuiditas tertutup untuk mencegah <em>slippage</em> dan <em>front-running</em>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Deterministic Latency -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[4/5] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2034&auto=format&fit=crop" alt="Deterministic Latency" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="zap" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Deterministic Latency</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Bebas dari intervensi manusia atau penumpukan <em>server-side queuing</em>. Arsitektur logika sistem memastikan eksekusi probabilitas matematis pada presisi mikro-detik yang dapat diaudit.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="mt-12 text-center reveal" style="transition-delay: 0.6s;">
+                <div class="inline-flex items-center gap-3 border border-gray-300 bg-white px-6 py-3 font-mono text-[10px] md:text-xs tracking-widest text-black shadow-sm relative z-10">
+                    <span class="w-2 h-2 bg-black rounded-full animate-ping"></span> QUANTUM SYSTEM: ACTIVE
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. DRACONIAN RISK GOVERNANCE (Manajemen Risiko Ketat) -->
+    <section class="py-16 md:py-32 bg-white text-black border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+            <div class="text-center mb-12 md:mb-20 reveal">
+                <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-4 block">Capital Preservation</span>
+                <h2 class="text-section leading-tight font-light">Draconian <br class="md:hidden"><span class="italic text-gray-400">Risk Governance.</span></h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-1 px-4 md:px-0 bg-gray-200 border border-gray-200">
+                <div class="bg-gray-50 p-8 md:p-12 shadow-sm hover:bg-white transition duration-500 reveal" style="transition-delay: 0.1s;">
+                    <h4 class="text-[10px] font-bold tracking-widest uppercase text-gray-400 mb-4 border-b border-gray-200 pb-2">Pilar 01</h4>
+                    <h3 class="text-xl font-normal mb-4 text-black">Pre-Trade Validation</h3>
+                    <p class="text-xs md:text-sm text-gray-500 font-light leading-relaxed">Kalkulasi lot dinamis dan validasi rasio Risk/Reward otomatis sebelum modal Anda terekspos ke pasar.</p>
+                </div>
+                <div class="bg-white p-8 md:p-12 transform md:-translate-y-4 shadow-xl z-10 border-t-4 border-black reveal" style="transition-delay: 0.3s;">
+                    <h4 class="text-[10px] font-bold tracking-widest uppercase text-gray-400 mb-4 border-b border-gray-100 pb-2">Pilar 02</h4>
+                    <h3 class="text-xl font-normal mb-4 text-black">In-Trade Monitoring</h3>
+                    <p class="text-xs md:text-sm text-gray-600 font-light leading-relaxed">Pengawasan *Drawdown* secara presisi dan sistem pembatasan kerugian harian absolut (*Hard Stop*) untuk mencegah kehancuran ekuitas.</p>
+                </div>
+                <div class="bg-gray-50 p-8 md:p-12 shadow-sm hover:bg-white transition duration-500 reveal" style="transition-delay: 0.5s;">
+                    <h4 class="text-[10px] font-bold tracking-widest uppercase text-gray-400 mb-4 border-b border-gray-200 pb-2">Pilar 03</h4>
+                    <h3 class="text-xl font-normal mb-4 text-black">Post-Trade Audit</h3>
+                    <p class="text-xs md:text-sm text-gray-500 font-light leading-relaxed">Analisis atribusi performa (*Performance Attribution*) untuk mendeteksi apakah profit Anda berasal dari keahlian atau sekadar keberuntungan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. CORPORATE DATA FORTRESS (Keamanan Institusional via Gambar Interaktif) -->
+    <section class="py-16 md:py-32 bg-gray-50 text-black border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+            <!-- Header Section -->
+            <div class="text-center md:text-left mb-12 md:mb-16 reveal">
+                <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-4 block">Corporate Data Fortress</span>
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <h2 class="text-section leading-tight font-light mb-0 text-black">Fort Knox <br><span class="italic text-gray-400 border-b border-gray-300 pb-1">Digitized.</span></h2>
+                    <p class="text-sm md:text-base text-gray-600 font-light max-w-xl text-left border-l-2 border-gray-300 pl-4 md:pl-6">
+                        Broker ritel menggunakan server awan massal yang rentan. Kami membangun perimeter keamanan fisik dan digital yang mengisolasi strategi miliaran dolar Anda dari ancaman spionase korporat dan manipulasi internal.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Image Grid Data (Interaktif) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Card 1: Bare-Metal Isolation -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2034&auto=format&fit=crop" alt="Bare-Metal Isolation" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="server" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Bare-Metal Isolation</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Bebas dari kerentanan <em>shared-cloud</em> ritel. Kami mengalokasikan arsitektur server fisik (Single-Tenant) secara eksklusif untuk setiap institusi demi mencegah kebocoran data silang.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Zero-Knowledge Vault -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070&auto=format&fit=crop" alt="Zero-Knowledge Vault" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="fingerprint" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Zero-Knowledge Vault</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Standar enkripsi asimetris di mana bahkan insinyur LEODRA pun secara matematis tidak dapat mendekripsi atau merekayasa balik (<em>reverse-engineer</em>) formula strategi <em>Alpha</em> Anda.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Multi-Sig Executive Clearance -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop" alt="Multi-Sig Executive Clearance" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="shield-check" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Multi-Sig Clearance</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Mitigasi risiko internal. Modifikasi parameter besar atau penarikan likuiditas perusahaan Anda memerlukan otentikasi kunci kriptografis terpisah dari berbagai dewan eksekutif Anda.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. AUDITED TRANSPARENCY (Transparansi Institusional via Gambar) -->
+    <section class="py-16 md:py-32 bg-white text-black border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+            <div class="text-center md:text-left mb-12 md:mb-16 reveal">
+                <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-4 block">Institutional Auditability</span>
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <h2 class="text-section leading-tight font-light mb-0 text-black">Brutal <br><span class="italic text-gray-400 border-b border-gray-300 pb-1">Transparency.</span></h2>
+                    <p class="text-sm md:text-base text-gray-600 font-light max-w-xl text-left border-l-2 border-gray-300 pl-4 md:pl-6">
+                        Broker ritel beroperasi sebagai "Black Box" yang memanipulasi spread dan melawan transaksi Anda. Kami menawarkan transparansi arsitektur murni di mana rute modal Anda dapat diaudit secara absolut.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop" alt="Zero Conflict of Interest" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="eye" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Zero Conflict Routing</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Tidak ada intervensi B-Book (Market Making). Transaksi Anda diteruskan 100% ke penyedia likuiditas Tier-1. Profit Anda tidak pernah menjadi kerugian perusahaan kami.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop" alt="Interbank Spread Pass-through" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="bar-chart" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Raw Spread Pass-through</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Kami tidak menyembunyikan biaya markup di balik spread. Anda mengakses spread mentah level antar-bank murni, menjaga profit margin algoritma frekuensi tinggi Anda tetap utuh.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=2070&auto=format&fit=crop" alt="Post-Trade Execution Audit" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="file-check" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Execution Audit Logs</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Laporan audit pasca-transaksi (*Post-Trade*) yang merinci timestamp hingga pecahan milidetik dan LP mana yang mengeksekusi pesanan miliaran dolar Anda. Transparansi absolut.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ▼▼▼ 3 SECTION INSTITUSIONAL MURNI (MINIMALIS & MONOKROM EKSKLUSIF) ▼▼▼ -->
+    
+    <!-- 7. THE CUSTODIAN MANDATE (Keamanan Modal Tingkat Atas via Gambar Interaktif) -->
+    <section class="py-16 md:py-32 bg-gray-50 text-black border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+            <div class="text-center md:text-left mb-12 md:mb-16 reveal">
+                <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-4 block">Tier-1 Capital Security</span>
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <h2 class="text-section leading-tight font-light mb-0 text-black">Mandat <br><span class="italic text-gray-400 border-b border-gray-300 pb-1">Kustodian.</span></h2>
+                    <p class="text-sm md:text-base text-gray-600 font-light max-w-xl text-left border-l-2 border-gray-300 pl-4 md:pl-6">
+                        Broker konvensional menempatkan dana Anda pada keranjang risiko perusahaan. LEODRA memastikan perlindungan absolut dengan mendelegasikan otoritas penyimpanan aset secara legal ke perbankan Tier-1 global.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1: Strict Segregation -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <img src="https://images.unsplash.com/photo-1601597111158-2fceff292cdc?q=80&w=2070&auto=format&fit=crop" alt="Strict Segregation of Funds" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="landmark" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Strict Segregation</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Modal Anda sepenuhnya diisolasi. Dana institusi tidak dapat disentuh untuk operasional LEODRA, dan kebal dari segala risiko kegagalan pihak ketiga (*counterparty risk*).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2: Syndicate Insurance -->
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=2071&auto=format&fit=crop" alt="Syndicate Insurance Coverage" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="shield" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Syndicated Insurance</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Melampaui standar regulator, kami menyediakan polis asuransi swasta tersindikasi berskala masif untuk mem-backup portofolio Anda jika terjadi peristiwa kehancuran pasar global (*Black Swan*).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?q=80&w=2070&auto=format&fit=crop" alt="Direct Treasury Settlement" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="arrow-right-left" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Direct Settlement</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Bypass gerbang pembayaran (Payment Gateway) ritel. Kami membuka jalur API penyelesaian dana tertutup (*Wire Transfer*) langsung antara perbendaharaan institusi Anda dan bank kami.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. ALGORITHMIC ACCOUNTABILITY (Akuntabilitas Mutlak via Gambar) -->
+    <section class="py-16 md:py-32 bg-white text-black border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+            <div class="text-center md:text-left mb-12 md:mb-16 reveal">
+                <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-4 block">Verifiable Alpha</span>
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <h2 class="text-section leading-tight font-light mb-0 text-black">Akuntabilitas <br><span class="italic text-gray-400 border-b border-gray-300 pb-1">Mutlak.</span></h2>
+                    <p class="text-sm md:text-base text-gray-600 font-light max-w-xl text-left border-l-2 border-gray-300 pl-4 md:pl-6">
+                        Investor institusional tidak menyerahkan miliaran dolar pada 'Black Box' atau keberuntungan. Mereka berinvestasi pada proses matematis yang dapat direkam, diaudit dengan kejam, dan direplikasi secara konsisten.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <img src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=2070&auto=format&fit=crop" alt="Forex Trade Logs" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="database" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Forex Trade Logs</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Setiap keputusan eksekusi, anomali, dan modifikasi order dicatat secara presisi pada server forex institusional yang tidak dapat dimanipulasi, memastikan kepatuhan mutlak untuk auditor dana Anda.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?q=80&w=2070&auto=format&fit=crop" alt="Alpha Attribution Analysis" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="microscope" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Alpha Attribution</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Validasi kuantitatif presisi tinggi pasca-perdagangan yang secara matematis membuktikan kepada investor Anda bahwa profit (imbal hasil) murni berasal dari struktur strategi, bukan keberuntungan acak.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2000&auto=format&fit=crop" alt="Real-Time Risk Audit" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="binary" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Live Risk Override</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Sistem pemantauan batasan eksposur portofolio secara *Real-Time*. Algoritma ini akan secara proaktif memblokir atau mengambil alih posisi (override) sebelum pelanggaran manajemen risiko terjadi.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. THE HORIZON DOCTRINE (Doktrin Cakrawala via Gambar) -->
+    <section class="py-16 md:py-32 bg-gray-50 text-black border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12">
+            <div class="text-center md:text-left mb-12 md:mb-16 reveal">
+                <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-4 block">Institutional Patience</span>
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <h2 class="text-section leading-tight font-light mb-0 text-black">Doktrin <br><span class="italic text-gray-400 border-b border-gray-300 pb-1">Cakrawala.</span></h2>
+                    <p class="text-sm md:text-base text-gray-600 font-light max-w-xl text-left border-l-2 border-gray-300 pl-4 md:pl-6">
+                        Kami menolak perburuan imbal hasil harian yang bersifat destruktif. LEODRA adalah ekosistem eksklusif di mana kesabaran institusional berpadu dengan arsitektur modal generasi (Generational Wealth).
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=2069&auto=format&fit=crop" alt="Generational Compounding" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="trending-up" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Generational Scaling</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Struktur modal yang didesain bukan untuk profitabilitas harian, melainkan untuk kurva pertumbuhan *compounding* eksponensial yang aman selama beberapa dekade ke depan.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2034&auto=format&fit=crop" alt="Anti-Frenzy Mandate" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="shield-off" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Anti-Frenzy Mandate</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Sistem yang memblokir efek *Gamification*. Isolasi psikologis secara total dari tren FOMO massal, fluktuasi media sosial, dan kepanikan irasional yang menjangkiti market ritel.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden bg-gray-900 aspect-[4/5] md:aspect-[3/4] border border-gray-200 shadow-sm cursor-pointer reveal" style="transition-delay: 0.5s;">
+                    <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2069&auto=format&fit=crop" alt="Bespoke Capital Sizing" class="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-30 group-hover:scale-105 transition duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition duration-500"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 md:p-8 text-left transform translate-y-8 group-hover:translate-y-0 transition duration-500">
+                        <i data-lucide="gem" class="w-6 h-6 md:w-8 md:h-8 text-white mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100"></i>
+                        <h3 class="text-white text-xl md:text-2xl font-normal tracking-wide mb-2">Bespoke Structuring</h3>
+                        <div class="h-px w-0 bg-white mb-4 group-hover:w-12 transition-all duration-500"></div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200 h-0 group-hover:h-auto overflow-hidden">
+                            <p class="text-gray-300 text-xs md:text-sm font-light leading-relaxed">
+                                Penyesuaian kurva risiko, limitasi instrumen, dan toleransi volatilitas yang dikalibrasi secara sangat spesifik mengikuti protokol investasi Family Office / Entitas Perusahaan Anda.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-16 text-center reveal" style="transition-delay: 0.6s;">
+                <a href="#join" class="inline-flex items-center justify-center gap-4 bg-black text-white px-10 py-4 md:py-5 rounded-none hover:bg-gray-800 transition-colors duration-500 text-[10px] md:text-[11px] font-normal uppercase tracking-[0.2em] group shadow-xl">
+                    <span>Masuki Ekosistem Eksklusif</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5 transition-transform duration-500 group-hover:translate-x-1.5"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+    <!-- ▲▲▲ END OF 3 NEW PURE INSTITUTIONAL SECTIONS ▲▲▲ -->
+
+    <!-- SECTION: THE BIOLOGICAL GLITCH -->
+    <section id="biology" class="py-16 md:py-32 bg-white text-black overflow-hidden relative border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10">
+            <div class="flex flex-col md:flex-row gap-12 md:gap-24 items-center text-center md:text-left">
+                <div class="w-full md:w-1/2 reveal">
+                    <span class="text-gray-500 font-medium tracking-[0.3em] md:tracking-[0.5em] uppercase mb-6 block text-[10px] md:text-xs animate-pulse">Human Error Detected</span>
+                    <h2 class="text-section mb-6 leading-tight font-light text-black">Anda Terlahir <br> untuk <span class="italic text-gray-400">GAGAL.</span></h2>
+                    <p class="text-xs md:text-base text-gray-600 leading-relaxed font-light mb-6">Maaf, tapi ini adalah fakta biologis. Otak Anda (Amigdala) dirancang selama jutaan tahun untuk lari dari rasa sakit dan mengejar kesenangan instan.</p>
+                    <p class="text-xs md:text-base text-black leading-relaxed font-normal mb-8 border-l-2 border-gray-300 pl-4 md:pl-6">Di pasar finansial, insting bertahan hidup ini justru mematikan. Anda *Cut Loss* terlambat karena takut (sakit), dan *Take Profit* terlalu cepat karena serakah (senang).</p>
+                </div>
+                <div class="w-full md:w-1/2 reveal relative">
+                    <div class="bg-gray-50 border border-gray-200 rounded-none p-8 md:p-12 relative overflow-hidden group hover:border-black transition duration-700 shadow-sm">
+                        <div class="absolute top-0 right-0 w-32 h-32 md:w-64 md:h-64 bg-white rounded-full blur-[80px] md:blur-[120px] opacity-50 group-hover:opacity-100 transition duration-700"></div>
+                        <h3 class="text-xl md:text-2xl mb-4 md:mb-6 text-black font-normal">Upgrade <span class="italic text-gray-500">Firmware</span> Otak Anda.</h3>
+                        <p class="text-gray-500 text-xs md:text-sm mb-8 leading-relaxed font-light">Jurnal LEODRA bertindak sebagai <strong class="font-normal text-black">Prefrontal Cortex Eksternal</strong>. Kami memproses logika saat otak Anda sedang panik.</p>
+                        <a href="#join" class="w-full py-4 md:py-5 border border-gray-300 text-black bg-white rounded-none hover:bg-black hover:text-white transition uppercase tracking-widest text-[10px] md:text-xs flex justify-center items-center gap-3 font-light shadow-sm"><i data-lucide="cpu" class="w-4 h-4 md:w-4 md:h-4"></i> Install Update</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: BURN THE SHIPS -->
+    <section id="ships" class="py-16 md:py-32 bg-gray-50 text-black relative overflow-hidden border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10 text-center reveal">
+            <span class="text-gray-500 font-medium tracking-[0.3em] uppercase mb-6 block text-[10px] md:text-xs">Sun Tzu Philosophy</span>
+            <h2 class="text-section mb-10 font-light text-black">Bakar <br> <span class="text-gray-400 italic">KAPAL ANDA.</span></h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center text-left reveal mt-12 md:mt-20">
+                <div class="border-l-2 border-black pl-6 md:pl-10">
+                    <h3 class="text-xl md:text-2xl font-normal mb-4 md:mb-6 text-black">Jangan Beri Jalan Mundur.</h3>
+                    <p class="text-xs md:text-base text-gray-600 leading-relaxed font-light">
+                        Jenderal kuno membakar kapal mereka setelah mendarat di medan perang. Pesannya jelas: <strong class="font-medium text-black">Menang atau Mati.</strong> Tidak ada jalan pulang.
+                        <br><br>
+                        Di trading, "Kapal" Anda adalah kebiasaan <strong class="font-medium text-black">Deposit Ulang (Top Up)</strong> saat rugi. Selama Anda punya opsi untuk top up, Anda akan trading sembarangan.
+                    </p>
+                </div>
+                <div class="bg-white p-8 md:p-12 rounded-none border border-gray-200 relative group overflow-hidden hover:border-black transition duration-500 shadow-sm">
+                    <i data-lucide="flame" class="w-10 h-10 md:w-12 md:h-12 text-black mb-6"></i>
+                    <h4 class="text-xl md:text-2xl mb-4 text-black font-normal">LEODRA Protocol:</h4>
+                    <p class="text-gray-600 text-xs md:text-base leading-relaxed font-light">
+                        Kami mematikan mentalitas "Top Up". Sistem kami memaksa Anda untuk bertahan hidup dengan apa yang ada di akun Anda sekarang.
+                    </p>
+                    <div class="mt-6 pt-6 md:mt-8 md:pt-8 border-t border-gray-200">
+                        <span class="text-[10px] md:text-xs font-mono text-black font-bold">RESULT: EXTREME DISCIPLINE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE ANTI-TRADE PARADOX -->
+    <section class="py-16 md:py-32 bg-white text-black overflow-hidden relative border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12 relative z-10 text-center">
+            <div class="reveal">
+                <span class="text-gray-500 font-medium tracking-[0.3em] uppercase mb-6 block text-[10px] md:text-xs">Paradoks Profitabilitas</span>
+                <h2 class="text-section mb-10 leading-tight font-light text-black">Keuntungan Terbesar Anda Adalah <br class="hidden md:block"> <span class="italic text-gray-400 line-through decoration-black decoration-2 md:decoration-4">Kemenangan.</span> <br> <span class="text-black">DIAM.</span></h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center text-left reveal mt-12 md:mt-20">
+                <div class="border-l-2 border-black pl-6 md:pl-10">
+                    <h3 class="text-xl md:text-2xl font-normal mb-4 md:mb-6 text-black">Terdengar Gila?</h3>
+                    <p class="text-xs md:text-base text-gray-600 leading-relaxed font-light">Broker ritel ingin Anda trading 50x sehari agar mereka kaya dari komisi. Kami ingin Anda trading <strong class="font-medium text-black">1x seminggu</strong>. <br><br> Kenapa? Karena 90% kerugian berasal dari "Overtrading". Jurnal LEODRA bertindak sebagai <strong class="font-medium text-black">Rem Tangan Otomatis</strong>.</p>
+                </div>
+                <div class="bg-gray-50 p-8 md:p-12 rounded-none border border-gray-200 relative group overflow-hidden shadow-sm hover:border-black transition duration-300">
+                    <i data-lucide="hand-metal" class="w-10 h-10 md:w-12 md:h-12 text-black mb-6"></i>
+                    <h4 class="text-xl md:text-2xl mb-4 font-normal text-black">The Power of "NO"</h4>
+                    <p class="text-gray-600 text-xs md:text-base font-light">Sistem kami membayar Anda untuk mengatakan "TIDAK" pada setup kualitas rendah.</p>
+                    <div class="mt-6 pt-6 md:mt-8 md:pt-8 border-t border-gray-200 flex flex-col md:flex-row md:justify-between items-start md:items-center gap-2">
+                        <span class="text-sm md:text-base font-mono text-black font-bold">SAVINGS: $5,000/mo</span>
+                        <span class="text-[9px] md:text-[10px] uppercase tracking-widest text-gray-500">Avoided Losses</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE BOREDOM MANIFESTO -->
+    <section class="py-16 md:py-32 bg-gray-50 border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-6 text-center reveal">
+            <div class="mb-10 md:mb-16">
+                <i data-lucide="coffee" class="w-10 h-10 md:w-12 md:h-12 mx-auto text-gray-400 mb-6"></i>
+                <h2 class="text-section mb-6 text-black leading-tight font-light">Maaf, Produk Kami <br class="hidden md:block"> <span class="italic text-gray-400">Membosankan.</span></h2>
+                <p class="text-sm md:text-lg text-gray-600 font-light leading-relaxed max-w-3xl mx-auto">Jika jantung Anda berdebar saat entry, Anda sedang berjudi. Jika Anda merasa "seru", Anda akan hancur. <br><br> Kami mendesain sistem yang begitu <strong class="font-medium text-black">terstruktur dan monoton</strong>, sehingga satu-satunya hal yang "menarik" adalah melihat saldo rekening Anda bertambah setiap bulan dengan tenang.</p>
+            </div>
+            <div class="inline-flex items-center gap-3 bg-white px-6 md:px-8 py-3 rounded-none shadow-sm border border-gray-200">
+                <span class="w-2 h-2 bg-black rounded-full animate-pulse"></span>
+                <span class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-600">Status: Boring but Profitable</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE 10,000 HOUR HACK -->
+    <section class="py-16 md:py-32 bg-white text-black relative border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-6 text-center reveal">
+            <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-6 block">Productivity Hack</span>
+            <h2 class="text-section mb-6 leading-tight font-light text-black">Curangi Aturan <br class="hidden md:block"> <span class="text-gray-400 italic">10.000 Jam.</span></h2>
+            <p class="text-sm md:text-lg text-gray-600 font-light leading-relaxed mb-12 md:mb-16">Malcolm Gladwell bilang butuh 10.000 jam untuk ahli. Itu untuk cara kuno. <br><br> Dengan merekam setiap detail mikro dari trading Anda, LEODRA mengubah 1 jam trading Anda menjadi setara dengan 10 jam pengalaman trader biasa. Ini bukan jalan pintas. Ini adalah <strong class="font-medium text-black">Jalan Tol Digital</strong>.</p>
+            <div class="inline-flex items-center justify-center gap-3 border border-gray-200 bg-gray-50 px-6 md:px-8 py-3 rounded-none w-full md:w-auto shadow-sm">
+                <i data-lucide="fast-forward" class="w-4 h-4 text-black"></i>
+                <span class="text-[10px] md:text-xs uppercase tracking-widest text-black font-medium">Speed Multiplier Active</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE EXPENSIVE FREE LUNCH -->
+    <section class="py-16 md:py-32 bg-gray-50 border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-6 text-center reveal">
+            <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-6 block">Ekonomi Digital</span>
+            <h2 class="text-section mb-6 leading-tight font-light text-black">Gratis Adalah <br class="hidden md:block"> <span class="text-gray-400 italic">Biaya Termahal.</span></h2>
+            <p class="text-sm md:text-lg text-gray-600 font-light leading-relaxed mb-12 md:mb-16">Platform "Gratis" menjual data posisi Anda ke <em>Market Maker</em> untuk dilikuidasi. Jika Anda tidak membayar untuk produknya, <strong class="font-medium text-black">ANDALAH PRODUKNYA.</strong> <br><br> Layanan kami berbayar karena satu alasan sederhana: Kami bekerja untuk <strong class="font-medium text-black">ANDA</strong>, bukan untuk broker.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 text-left">
+                <div class="p-6 md:p-8 border border-gray-200 rounded-none bg-white shadow-sm hover:border-black transition duration-300"><h4 class="text-base md:text-lg font-normal mb-2 text-black">Gratis (Mereka)</h4><p class="text-[11px] md:text-xs text-gray-500 font-light">Data dijual. Iklan mengganggu. Keamanan rendah.</p></div>
+                <div class="p-6 md:p-8 border border-black rounded-none bg-black md:transform md:scale-105 shadow-xl"><h4 class="text-base md:text-lg font-bold mb-2 text-white">Berbayar (LEODRA)</h4><p class="text-[11px] md:text-xs text-gray-400 font-light">Data privat. Fokus murni. Proteksi maksimal.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE LEGAL HEIST -->
+    <section class="py-16 md:py-32 bg-white text-black relative border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-6 text-center reveal">
+            <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-6 block">Operasi Finansial</span>
+            <h2 class="text-section mb-6 leading-tight font-light text-black">Merampok Bank... <br class="hidden md:block"> <span class="italic text-gray-400">Secara Legal.</span></h2>
+            <p class="text-sm md:text-lg text-gray-600 font-light leading-relaxed mb-12 md:mb-16">Setiap hari, Bank Besar mengambil uang dari jutaan trader ritel. Kami memberi Anda peta brankas mereka. <br><br> Dengan menggunakan data Jurnal LEODRA, Anda berhenti menjadi korban, dan mulai menjadi bagian dari operasi mereka. Anda mengambil kembali apa yang menjadi hak Anda melalui kompetensi.</p>
+            <a href="#join" class="inline-flex items-center justify-center gap-3 border border-gray-300 bg-gray-50 px-6 py-3 rounded-none hover:border-black hover:bg-white transition cursor-pointer w-full md:w-auto shadow-sm"><i data-lucide="lock-open" class="w-4 h-4 text-black"></i><span class="text-[10px] md:text-xs uppercase tracking-widest font-bold text-black">Access Vault</span></a>
+        </div>
+    </section>
+
+    <!-- SECTION: INVISIBLE ENEMY -->
+    <section class="py-16 md:py-32 bg-gray-50 text-black border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-6 md:px-12">
+            <div class="flex flex-col md:flex-row gap-12 md:gap-24 items-center">
+                <div class="w-full md:w-1/2 reveal relative order-2 md:order-1">
+                    <div class="aspect-[4/5] bg-white border border-gray-200 rounded-none overflow-hidden relative shadow-sm w-full max-w-sm mx-auto hover:border-black transition duration-300 group">
+                        <div class="absolute inset-0 flex items-center justify-center bg-gray-50 group-hover:bg-white transition duration-300">
+                            <i data-lucide="ghost" class="w-24 h-24 md:w-32 md:h-32 text-gray-300 group-hover:text-black transition duration-300 animate-pulse"></i>
+                        </div>
+                        <div class="absolute bottom-6 left-6 md:bottom-10 md:left-10 text-black">
+                            <p class="text-[10px] md:text-xs tracking-widest uppercase mb-1 text-gray-500 font-light">Subject:</p>
+                            <p class="text-2xl md:text-3xl font-light text-black">YOU.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 reveal text-center md:text-left order-1 md:order-2">
+                    <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-6 block">Truth Bomb</span>
+                    <h2 class="text-section mb-6 leading-tight font-light text-black">Musuh Anda Bukan <br class="hidden md:block"> <span class="italic text-gray-400">Market.</span></h2>
+                    <p class="text-xs md:text-base text-gray-600 leading-relaxed font-light mb-6">
+                        Market itu netral. Market tidak tahu Anda ada. Market tidak peduli jika Anda untung atau rugi.
+                    </p>
+                    <p class="text-sm md:text-base text-black leading-relaxed font-normal mb-6 md:mb-10 border-l-2 border-black pl-4 text-left">
+                        Musuh sesungguhnya ada di cermin. Dopamin Anda. Ketakutan Anda. Ego Anda yang ingin selalu benar.
+                    </p>
+                    <p class="text-xs md:text-sm text-gray-500 mb-8 text-left font-light">
+                        Jurnal LEODRA adalah "Cermin Ajaib" yang memantulkan kebiasaan buruk Anda secara <em>Real-Time</em>, memaksa Anda untuk jujur pada diri sendiri sebelum saldo Anda habis.
+                    </p>
+                    <a href="#join" class="btn-primary inline-block text-center w-full md:w-auto">Hadapi Ego Anda</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE ADRENALINE THIEF -->
+    <section class="py-16 md:py-32 bg-white border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-6 text-center reveal">
+            <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-6 block">Plot Twist</span>
+            <h2 class="text-section mb-6 leading-tight font-light text-black">Kami Akan Mencuri <br class="hidden md:block"> <span class="text-gray-400 italic">Kebahagiaan Anda.</span></h2>
+            <p class="text-sm md:text-lg text-gray-600 font-light leading-relaxed mb-12 md:mb-16">
+                Maaf, tapi kami akan mengambil sensasi "Jantung Berdebar" saat Anda entry. Kami akan mengambil "Euforia" saat profit besar.
+                <br><br>
+                Sebagai gantinya, kami memberi Anda <strong class="font-medium text-black">Kebosanan yang Kaya Raya</strong>. Rutinitas yang dingin, kalkulatif, dan menghasilkan uang tanpa drama.
+                <br>Apakah Anda siap kehilangan drama hidup Anda?
+            </p>
+            <a href="#join" class="btn-primary inline-block w-full md:w-auto">Ambil Drama Saya</a>
+        </div>
+    </section>
+
+    <!-- SECTION: THE ZERO GUARANTEE -->
+    <section class="py-16 md:py-32 bg-gray-50 text-center relative overflow-hidden border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-6 reveal">
+            <span class="text-gray-500 font-medium tracking-[0.3em] uppercase mb-6 block text-[9px] md:text-[10px]">Anti-Marketing Promise</span>
+            <h2 class="text-section mb-6 leading-tight font-light text-black">Garansi Kami: <br class="hidden md:block"> <span class="italic text-gray-400">0% Profit.</span></h2>
+            <div class="relative w-full h-24 md:h-32 bg-white rounded-none mb-8 md:mb-12 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
+                <div class="flex items-center gap-3 text-black font-mono">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-black"></i> <span class="text-sm md:text-xl font-medium">NO SIGNALS. NO PROMISES.</span>
+                </div>
+            </div>
+            <p class="text-sm md:text-lg text-gray-600 leading-relaxed font-light">
+                Jika Anda mencari garansi "Cepat Kaya", silakan pergi ke kasino.
+                <br><br>
+                Kami hanya menjamin satu hal: <strong class="font-medium text-black">Proses yang Benar.</strong>
+                <br>
+                Profit hanyalah <em>efek samping</em> yang tak terelakkan dari manajemen risiko yang sempurna dan eksekusi tanpa emosi.
+            </p>
+        </div>
+    </section>
+
+    <!-- SECTION: THE SCREEN DETOX -->
+    <section id="detox" class="py-16 md:py-32 bg-white border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="flex flex-col md:flex-row gap-12 md:gap-20 items-center reveal text-center md:text-left">
+                <div class="w-full md:w-1/2 relative group">
+                    <div class="aspect-video bg-gray-50 border border-gray-200 rounded-none shadow-sm relative overflow-hidden flex items-center justify-center hover:border-black transition duration-500">
+                         <div class="absolute inset-0 bg-gray-100 animate-pulse group-hover:hidden transition duration-500"></div>
+                         <p class="text-gray-400 text-lg md:text-2xl font-mono font-light group-hover:hidden">ERROR: STRESS</p>
+                         <p class="hidden group-hover:block text-black text-lg md:text-2xl font-mono font-medium">PEACE RESTORED</p>
+                    </div>
+                    <p class="mt-4 md:mt-6 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest text-center">Tap / Hover to Activate Mode</p>
+                </div>
+                <div class="w-full md:w-1/2">
+                    <span class="text-gray-500 font-medium tracking-[0.3em] uppercase mb-6 block text-[9px] md:text-[10px]">Mental Health Alert</span>
+                    <h2 class="text-section mb-6 leading-tight font-light text-black">Resep Dokter: <br class="hidden md:block"> <span class="italic text-gray-400">Tutup Laptop Anda.</span></h2>
+                    <p class="text-xs md:text-base text-gray-600 font-light leading-relaxed mb-6 text-left">
+                        Jika Anda menatap chart lebih dari 2 jam sehari, Anda bukan Trader. Anda adalah <strong class="font-medium text-black">Budak Pixel.</strong>
+                    </p>
+                    <p class="text-sm md:text-base text-black font-normal border-l-2 border-black pl-4 text-left">
+                        LEODRA didesain untuk "Set & Forget". Kami ingin Anda menghabiskan 99% waktu Anda untuk hidup, bukan untuk stres melihat candle bergerak naik turun.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE FORTUNE TELLER FALLACY -->
+    <section class="py-16 md:py-32 bg-gray-50 text-black relative overflow-hidden border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-6 relative z-10 text-center reveal">
+            <div class="mb-10">
+                <i data-lucide="sparkles" class="w-10 h-10 md:w-12 md:h-12 mx-auto text-black mb-6"></i>
+                <h2 class="text-section mb-8 leading-tight font-light text-black">Bakarlah <br class="hidden md:block"> <span class="italic text-gray-400 line-through decoration-black decoration-1 md:decoration-2">Bola Kristal Anda.</span></h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 text-left max-w-4xl mx-auto">
+                <div class="bg-white p-6 md:p-8 rounded-none border border-gray-200 shadow-sm">
+                    <h4 class="text-base md:text-lg font-normal text-black mb-3">The Amateur (Dukun)</h4>
+                    <p class="text-gray-500 text-xs md:text-sm font-light">"Saya rasa harga akan naik karena berita perang..."</p>
+                    <p class="text-gray-400 mt-4 text-[10px] md:text-xs font-mono">Hasil: Menebak, Berharap, Kecewa.</p>
+                </div>
+                <div class="bg-black p-6 md:p-8 rounded-none border border-black shadow-md md:transform md:scale-105 z-10 relative">
+                    <h4 class="text-base md:text-lg font-bold text-white mb-3">The Pro (Ilmuwan)</h4>
+                    <p class="text-gray-400 text-xs md:text-sm font-light">"Jika harga tembus level X, saya beli. Jika tidak, saya diam."</p>
+                    <p class="text-white mt-4 text-[10px] md:text-xs font-mono font-medium">Hasil: Bereaksi pada Data, Bukan Ramalan.</p>
+                </div>
+            </div>
+            
+            <p class="text-xs md:text-base text-gray-600 mt-12 md:mt-16 font-light max-w-2xl mx-auto">
+                Kami menghancurkan kebiasaan meramal Anda dan menggantinya dengan <strong class="font-medium text-black">Logika If-Then</strong> (Jika-Maka) yang dingin dan kejam.
+            </p>
+        </div>
+    </section>
+
+    <!-- SECTION: THE 'NO-SIGNAL' FEATURE -->
+    <section class="py-16 md:py-32 bg-white text-center relative overflow-hidden border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-6 reveal">
+            <span class="text-gray-500 font-medium tracking-[0.3em] uppercase mb-6 block text-[9px] md:text-[10px]">Fitur Unggulan</span>
+            <h2 class="text-section mb-6 leading-tight font-light text-black">Fitur Terbaik Kami? <br class="hidden md:block"> <span class="italic text-gray-400">Tidak Ada Sinyal.</span></h2>
+            
+            <div class="relative w-full h-24 md:h-32 bg-gray-50 rounded-none mb-8 md:mb-10 flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
+                <div class="flex items-center gap-3 text-black font-mono">
+                    <i data-lucide="bell-off" class="w-5 h-5"></i> <span class="tracking-widest text-sm md:text-lg font-medium">SILENCE</span>
+                </div>
+            </div>
+
+            <p class="text-sm md:text-lg text-gray-600 leading-relaxed font-light text-left md:text-center">
+                Aplikasi lain membombardir Anda dengan notifikasi "BUY NOW!" agar Anda terus bertransaksi.
+                <br><br>
+                LEODRA memberitahu Anda kapan harus <strong class="font-medium text-black">DIAM</strong>. Karena modal yang diselamatkan dari <em>Bad Trade</em> jauh lebih berharga daripada profit spekulatif.
+            </p>
+        </div>
+    </section>
+
+    <!-- SECTION: THE LONELY TRADER -->
+    <section id="lonely" class="py-16 md:py-32 bg-gray-50 border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="flex flex-col md:flex-row gap-12 md:gap-20 items-center reveal text-center md:text-left">
+                <div class="w-full md:w-1/2">
+                    <span class="text-gray-500 font-medium tracking-[0.3em] uppercase mb-6 block text-[9px] md:text-[10px]">Anti-Social Network</span>
+                    <h2 class="text-section mb-6 leading-tight font-light text-black">Jadilah Orang <br class="hidden md:block"> <span class="italic text-gray-400">Paling Kesepian.</span></h2>
+                    <p class="text-sm md:text-lg text-gray-600 leading-relaxed font-light mb-6 text-left">
+                        Grup sinyal Telegram? Forum saham? Komunitas Discord? Itu semua adalah <strong class="font-medium text-black">suara bising</strong> yang membunuh fokus Anda.
+                        <br><br>
+                        Trader Institusional tidak berdiskusi di forum umum. Mereka bekerja dalam hening. Profit sejati ditemukan dalam isolasi, di mana hanya ada Anda, Data Anda, dan Jurnal Anda.
+                    </p>
+                </div>
+                <div class="w-full md:w-1/2 flex justify-center">
+                    <div class="relative w-full max-w-[280px] h-64 md:h-80 bg-white rounded-none shadow-sm border border-gray-200 flex flex-col items-center justify-center p-6 text-center group cursor-pointer md:hover:scale-105 hover:border-black transition duration-500">
+                        <div class="absolute inset-0 bg-gray-50 opacity-0 group-hover:opacity-100 transition duration-500 rounded-none"></div>
+                        <i data-lucide="user-x" class="w-12 h-12 md:w-16 md:h-16 text-gray-400 mb-6 group-hover:text-black transition relative z-10"></i>
+                        <h4 class="text-lg md:text-xl font-normal mb-2 relative z-10 text-black">Solo Mode</h4>
+                        <p class="text-gray-500 text-[10px] md:text-xs relative z-10 font-light">Status: <strong class="font-normal text-black">Disconnected from Noise.</strong> <br>Connected to Wealth.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: BLIND SPOT -->
+    <section class="py-16 md:py-32 bg-white text-center relative overflow-hidden border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-6 reveal">
+            <span class="text-gray-500 font-medium tracking-[0.3em] uppercase mb-6 block text-[9px] md:text-[10px]">Visual Deception</span>
+            <h2 class="text-section mb-6 leading-tight font-light text-black">Jangan Percaya <br class="hidden md:block"> <span class="italic text-gray-400">Mata Anda.</span></h2>
+            <div class="relative w-full h-32 md:h-48 bg-gray-50 border border-gray-200 rounded-none mb-8 md:mb-10 flex items-center justify-center overflow-hidden group cursor-pointer hover:bg-white hover:border-black transition duration-700 shadow-sm">
+                <p class="text-lg md:text-xl text-gray-400 group-hover:hidden transition font-light">Apa yang Anda lihat?</p>
+                <div class="hidden group-hover:flex flex-col justify-center text-black text-center p-6 animate-in fade-in zoom-in duration-500 w-full h-full">
+                    <p class="text-sm md:text-base font-mono mb-2 text-black font-medium">>> HIDDEN LIQUIDITY FOUND</p>
+                    <p class="text-[10px] md:text-xs font-light text-gray-600">Candlestick hanyalah ilusi. Volume & Order Flow adalah realitas.</p>
+                </div>
+            </div>
+            <p class="text-sm md:text-lg text-gray-600 leading-relaxed font-light text-left md:text-center">Candlestick hijau besar terlihat kuat, padahal itu adalah jebakan "Smart Money". LEODRA memberi Anda <strong class="font-medium text-black">Kacamata X-Ray</strong> untuk melihat struktur pasar yang sebenarnya.</p>
+        </div>
+    </section>
+
+    <!-- SECTION 2: THE REALITY (Terhubung dengan menu Fakta Pasar) -->
+    <section id="stats" class="py-16 md:py-32 bg-gray-50 overflow-hidden border-b border-gray-200">
+        <div class="max-w-[1400px] mx-auto px-6 text-center mb-12 md:mb-16 reveal">
+            <h2 class="text-2xl md:text-4xl mb-4 md:mb-6 leading-tight font-light text-black">Biaya Sebuah <br class="md:hidden"><span class="italic text-gray-400">Keraguan.</span></h2>
+            <p class="text-gray-500 max-w-2xl mx-auto text-xs md:text-base font-light text-left md:text-center">
+                Tanpa data yang terstruktur, Anda tidak sedang berinvestasi. Anda sedang menebak. Dan dalam bisnis skala global, tebakan adalah biaya termahal.
+            </p>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-center gap-6 md:gap-10 px-6">
+            <div class="w-full md:w-[400px] min-h-[300px] md:h-[450px] bg-white border border-gray-200 shadow-sm relative p-8 flex flex-col justify-between group reveal transition duration-500 hover:border-black">
+                <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition"><i data-lucide="bar-chart-2" class="w-20 h-20 md:w-32 md:h-32 text-black"></i></div>
+                <div><h3 class="text-xl md:text-2xl mb-3 font-normal text-black">Stagnasi Aset</h3><p class="text-gray-500 text-xs md:text-sm leading-relaxed font-light">Tanpa evaluasi harian, portofolio Anda berjalan di tempat sementara inflasi terus menggerus nilai uang Anda.</p></div>
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-none bg-black flex items-center justify-center text-white text-sm md:text-base mt-6"><i data-lucide="arrow-right"></i></div>
+            </div>
+            
+            <div class="w-full md:w-[400px] min-h-[300px] md:h-[450px] bg-black text-white rounded-none relative p-8 flex flex-col justify-between group reveal shadow-xl" style="transition-delay: 0.1s;">
+                <div class="absolute top-0 right-0 p-6 opacity-20"><i data-lucide="shield-alert" class="w-20 h-20 md:w-32 md:h-32"></i></div>
+                <div><h3 class="text-xl md:text-2xl mb-3 font-normal text-white">Kecemasan Mental</h3><p class="text-gray-400 text-xs md:text-sm leading-relaxed font-light">Ketidaktahuan menciptakan rasa takut. Tidur yang tidak nyenyak karena posisi terbuka adalah tanda bahwa Anda tidak memiliki kontrol.</p></div>
+                <div class="w-full py-4 border-t border-white/20 mt-6"><span class="text-[10px] md:text-xs tracking-widest uppercase font-light text-white">Risk Alert</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: THE SOLUTION -->
+    <section id="solutions" class="py-16 md:py-32 bg-white text-black relative border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-6 block">The Secret Protocol</span>
+            <h2 class="text-section mb-6 leading-tight reveal font-light text-black">Ubah Cara Anda <br> Melihat <span class="italic text-gray-400">Dunia.</span></h2>
+            <p class="text-xs md:text-base text-gray-600 font-light leading-relaxed mb-12 md:mb-16 reveal text-left md:text-center">LEODRA bukan sekadar jurnal. Ini adalah <strong class="font-medium text-black">Sistem Operasi</strong> untuk keputusan finansial Anda. Kami menyediakan infrastruktur yang digunakan oleh institusi global.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 text-left reveal">
+                <div class="p-6 md:p-8 border border-gray-200 bg-gray-50 rounded-none hover:border-black transition duration-500 shadow-sm"><i data-lucide="layers" class="w-6 h-6 md:w-8 md:h-8 mb-4 text-black"></i><h4 class="text-lg md:text-xl mb-2 font-normal text-black">Terstruktur</h4><p class="text-gray-500 text-xs md:text-sm font-light">Setiap data tersimpan rapi. Pola perilaku Anda terdeteksi secara otomatis oleh algoritma kami.</p></div>
+                <div class="p-6 md:p-8 border border-gray-200 bg-gray-50 rounded-none hover:border-black transition duration-500 shadow-sm"><i data-lucide="lock" class="w-6 h-6 md:w-8 md:h-8 mb-4 text-black"></i><h4 class="text-lg md:text-xl mb-2 font-normal text-black">Privasi Mutlak</h4><p class="text-gray-500 text-xs md:text-sm font-light">Data Anda adalah aset Anda. Kami melindunginya dengan standar keamanan enkripsi tertinggi.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE EXPENSIVE HOBBY -->
+    <section class="py-16 md:py-32 bg-gray-50 border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="flex flex-col md:flex-row gap-12 md:gap-20 items-center reveal text-center md:text-left">
+                <div class="w-full md:w-1/2">
+                    <span class="text-gray-500 font-medium tracking-[0.3em] uppercase mb-6 block text-[9px] md:text-[10px]">Financial Wake-up Call</span>
+                    <h2 class="text-section mb-6 leading-tight font-light text-black">Hobi Termahal <br class="hidden md:block"> <span class="italic text-gray-400">di Dunia.</span></h2>
+                    <p class="text-sm md:text-lg text-gray-600 leading-relaxed font-light mb-6 text-left">Apakah Anda trading karena bosan? Atau untuk sensasi? Jika iya, mainlah golf atau beli mobil sport. Itu lebih murah. <br><br> Trading tanpa sistem profesional bukan bisnis. Itu adalah hobi yang membakar <strong class="font-medium text-black">$50,000 per tahun</strong> dari tabungan masa depan Anda.</p>
+                    <p class="text-sm md:text-base text-black font-normal border-l-2 border-black pl-4 text-left">LEODRA mengubah hobi mahal ini menjadi bisnis yang membosankan, terukur, dan profitable.</p>
+                </div>
+                <div class="w-full md:w-1/2 flex justify-center mt-6 md:mt-0">
+                    <a href="#join" class="relative w-full max-w-[350px] h-[300px] md:h-[400px] bg-white rounded-none shadow-sm border border-gray-200 flex flex-col items-center justify-center p-6 md:p-8 text-center group cursor-pointer hover:bg-black hover:text-white transition duration-500">
+                        <i data-lucide="banknote" class="w-12 h-12 md:w-16 md:h-16 text-black mb-4 md:mb-6 group-hover:text-white transition"></i>
+                        <h4 class="text-2xl md:text-3xl font-normal mb-2 text-black group-hover:text-white transition">-$50,000</h4>
+                        <p class="text-gray-400 text-[10px] md:text-xs tracking-widest uppercase font-light">Annual Cost of "Hobby Trading"</p>
+                        <div class="mt-6 md:mt-8 px-4 py-2 md:px-6 md:py-3 border border-gray-300 rounded-none text-[10px] md:text-xs group-hover:border-white group-hover:text-white font-light text-black transition">Switch to Pro Mode</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE PROBABILITY MATRIX (Terhubung dengan menu Sistem) -->
+    <section id="prob" class="py-16 md:py-32 bg-white text-black relative overflow-hidden border-b border-gray-200">
+        <div class="container mx-auto px-6 max-w-5xl relative z-10">
+            <div class="text-center mb-10 md:mb-16 fade-in-up">
+                <span class="text-gray-500 font-mono text-[9px] md:text-[10px] tracking-[0.3em] uppercase mb-4 block">System Logic</span>
+                <h2 class="text-2xl md:text-4xl leading-tight font-light text-black">Kalah 60%, <br class="md:hidden"><span class="italic text-gray-400">Tetap Kaya.</span></h2>
+                <p class="text-gray-500 mt-4 max-w-xl mx-auto text-xs md:text-sm font-light">Anda tidak butuh 'Crystal Ball'. Anda butuh Risk:Reward yang asimetris.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center fade-in-up">
+                <div class="bg-gray-50 border border-gray-200 p-6 md:p-8 rounded-none shadow-sm hover:border-black transition duration-300">
+                    <h3 class="text-base md:text-lg font-normal mb-2 text-gray-500">Amateur Logic</h3>
+                    <p class="text-xl md:text-2xl font-mono font-light mb-2 text-black">90% Winrate</p>
+                    <p class="text-[10px] md:text-xs text-gray-500 font-light">Risk 1 : Reward 0.5</p>
+                    <div class="mt-4 pt-4 border-t border-gray-200 text-gray-500 font-normal text-[10px] md:text-xs">HASIL: BANGKRUT</div>
+                </div>
+                <div class="bg-black border border-black p-6 md:p-8 rounded-none md:transform md:scale-105 shadow-xl relative z-10">
+                    <h3 class="text-base md:text-lg font-bold mb-2 text-white">LEODRA Logic</h3>
+                    <p class="text-xl md:text-2xl font-mono font-medium mb-2 text-white">40% Winrate</p>
+                    <p class="text-[10px] md:text-xs text-gray-400 font-light">Risk 1 : Reward 3</p>
+                    <div class="mt-4 pt-4 border-t border-gray-700 text-white font-bold text-[10px] md:text-xs">HASIL: PROFITABLE</div>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 p-6 md:p-8 rounded-none shadow-sm hover:border-black transition duration-300">
+                    <h3 class="text-base md:text-lg font-normal mb-2 text-gray-500">Pro Logic</h3>
+                    <p class="text-xl md:text-2xl font-mono font-light mb-2 text-black">50% Winrate</p>
+                    <p class="text-[10px] md:text-xs text-gray-500 font-light">Risk 1 : Reward 2</p>
+                    <div class="mt-4 pt-4 border-t border-gray-200 text-gray-500 font-normal text-[10px] md:text-xs">HASIL: VERY PROFITABLE</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: THE COMPOUND EFFECT (CALCULATOR) -->
+    <section id="blueprint" class="py-16 md:py-32 bg-gray-50 border-b border-gray-200">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+                
+                <!-- Left: Inputs & Explanation -->
+                <div class="reveal text-center md:text-left">
+                    <span class="text-[9px] md:text-[10px] font-medium tracking-[0.3em] text-gray-500 uppercase mb-4 md:mb-6 block">Interactive Simulation</span>
+                    <h2 class="text-section mb-6 leading-tight font-light text-black">Hitung Masa Depan <br class="hidden md:block"> <span class="italic text-gray-400">Finansial Anda.</span></h2>
+                    <p class="text-sm md:text-lg text-gray-600 leading-relaxed mb-8 md:mb-10 font-light text-left md:text-center">
+                        Masukkan angka nyata Anda. Lihat bagaimana konsistensi kecil, jika dipadukan dengan <strong class="font-medium text-black">Compounding Interest</strong>, dapat menciptakan kekayaan eksponensial.
+                    </p>
+                    
+                    <!-- Calculator Inputs -->
+                    <div class="bg-white rounded-none p-6 border border-gray-200 shadow-sm space-y-6 text-left">
+                        <div>
+                            <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-gray-500 uppercase tracking-widest mb-2">
+                                <span>Modal Awal ($)</span>
+                            </label>
+                            <input type="number" id="initialCapital" value="1000" class="w-full bg-gray-50 border border-gray-300 rounded-none px-4 py-3 font-mono text-base md:text-lg font-normal text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition" oninput="calculateGrowth()">
+                        </div>
+                        
+                        <div>
+                            <label class="flex justify-between text-[9px] md:text-[10px] font-medium text-gray-500 uppercase tracking-widest mb-2">
+                                <span>Target Profit Bulanan (%)</span>
+                            </label>
+                            <input type="number" id="monthlyReturn" value="10" class="w-full bg-gray-50 border border-gray-300 rounded-none px-4 py-3 font-mono text-base md:text-lg font-normal text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition" oninput="calculateGrowth()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[9px] md:text-[10px] font-medium text-gray-500 uppercase tracking-widest mb-2">
+                                <span>Durasi (Bulan)</span>
+                                <span id="durationValue" class="text-black font-medium">12 Bulan</span>
+                            </div>
+                            <input type="range" id="duration" min="6" max="60" value="12" class="w-full h-1.5 bg-gray-300 rounded-none appearance-none cursor-pointer accent-black" oninput="calculateGrowth()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Visual Result (Dynamic) -->
+                <div class="reveal w-full relative h-auto md:min-h-[500px] bg-black text-white rounded-none p-5 sm:p-6 md:p-8 overflow-hidden shadow-2xl flex flex-col justify-between group">
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+                    
+                    <!-- Result Header (Dibuat sejajar Kiri-Kanan di HP) -->
+                    <div class="relative z-10 flex flex-row justify-between items-start border-b border-gray-800 pb-5 mb-2 gap-2">
+                        <div class="text-left">
+                            <h4 class="text-base md:text-xl font-normal mb-1 text-white leading-tight">Total Nilai Aset</h4>
+                            <p class="text-gray-500 text-[8px] md:text-[10px] font-mono uppercase tracking-widest font-light">AFTER COMPOUNDING</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl md:text-4xl font-mono font-light text-white tracking-tighter" id="finalBalance">$3,138</p>
+                            <p class="text-[9px] md:text-xs text-emerald-400 font-mono tracking-widest mt-1" id="totalGrowthDisplay">+213.8% GROWTH</p>
+                        </div>
+                    </div>
+
+                    <!-- Visual Bars (Chart) - Diberi tinggi tetap agar lega dan terlihat jelas di HP -->
+                    <div class="relative w-full h-[250px] sm:h-[300px] md:h-[350px] flex items-end justify-center gap-6 md:gap-10 z-10 py-2 mt-6 mb-6">
+                        <!-- Bar 1: Linear -->
+                        <div class="w-[40%] md:w-1/3 h-full flex flex-col justify-end group/bar">
+                            <div class="text-center mb-3 opacity-100 transition-opacity duration-300">
+                                <span class="text-[8px] md:text-[9px] font-mono text-gray-400 block font-light mb-1">LINEAR</span>
+                                <span class="text-[11px] md:text-xs font-normal text-white tracking-wide" id="linearValue">$2,200</span>
+                            </div>
+                            <!-- AREA TRACK BAR: Memastikan persentase tinggi (height: %) merespon sempurna di HP -->
+                            <div class="w-full flex-1 flex flex-col justify-end relative">
+                                <div class="w-full bg-gray-800 rounded-none relative overflow-hidden transition-all duration-1000 ease-out border border-gray-700" id="linearBar" style="height: 30%;">
+                                    <div class="absolute top-0 left-0 w-full h-[1px] bg-white/30"></div>
+                                </div>
+                            </div>
+                            <p class="text-center text-[9px] md:text-[10px] font-normal text-gray-500 mt-3 uppercase tracking-widest leading-tight">Tanpa<br>Compound</p>
+                        </div>
+
+                        <!-- Bar 2: Exponential -->
+                        <div class="w-[40%] md:w-1/3 h-full flex flex-col justify-end group/bar">
+                            <div class="text-center mb-3 opacity-100 transition-opacity duration-300">
+                                <span class="text-[8px] md:text-[9px] font-mono text-gray-300 block font-light mb-1">LEODRA</span>
+                                <span class="text-xs md:text-sm font-normal text-white tracking-wide" id="compoundDisplay">$3,138</span>
+                            </div>
+                            <!-- AREA TRACK BAR: Memastikan persentase tinggi (height: %) merespon sempurna di HP -->
+                            <div class="w-full flex-1 flex flex-col justify-end relative">
+                                <div class="w-full bg-white rounded-none relative overflow-hidden transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(255,255,255,0.1)]" id="compoundBar" style="height: 60%;">
+                                    <div class="absolute top-0 left-0 w-full h-[1px] bg-black/50 animate-pulse"></div>
+                                </div>
+                            </div>
+                            <p class="text-center text-[9px] md:text-[10px] font-normal text-gray-300 mt-3 uppercase tracking-widest leading-tight">Dengan<br>Compound</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Footer (Format Invoice Kiri-Kanan di HP, 3 Kolom di Laptop) -->
+                    <div class="relative z-10 flex flex-col md:flex-row w-full font-mono text-[10px] font-light mt-2 border-t border-gray-800 pt-2 md:pt-0">
+                        
+                        <!-- Block 1: Profit Linear -->
+                        <div class="w-full md:w-1/3 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start py-4 md:py-6 border-b border-gray-800 md:border-b-0 md:border-r md:pr-6">
+                            <div class="text-left mb-0 md:mb-2">
+                                <span class="text-gray-500 block font-medium">TANPA COMPOUND</span>
+                                <span class="text-gray-400 text-[8px] md:text-[9px] block mt-1" id="linearTotalDisplay">TOTAL ASET: $2,200</span>
+                            </div>
+                            <div class="text-right md:text-left">
+                                <span class="text-white font-normal text-sm md:text-base block" id="linearProfitDisplay">+$1,200</span>
+                                <span class="text-emerald-400 font-normal text-[9px] md:text-[10px] block mt-0.5" id="linearProfitPct">+120%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Block 2: Ekstra Profit -->
+                        <div class="w-full md:w-1/3 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start py-4 md:py-6 border-b border-gray-800 md:border-b-0 md:border-r md:px-6">
+                            <div class="text-left mb-0 md:mb-2">
+                                <span class="text-gray-500 block font-medium">EKSTRA (LEODRA)</span>
+                                <span class="text-gray-400 text-[8px] md:text-[9px] block mt-1 invisible hidden md:block">SPACER</span>
+                            </div>
+                            <div class="text-right md:text-left">
+                                <span class="text-white font-normal text-sm md:text-base block" id="extraProfitDisplay">+$938</span>
+                                <span class="text-emerald-400 font-normal text-[9px] md:text-[10px] block mt-0.5" id="extraProfitPct">+93.8%</span>
+                            </div>
+                        </div>
+
+                        <!-- Block 3: Total Profit -->
+                        <div class="w-full md:w-1/3 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start py-4 md:py-6 md:pl-6">
+                            <div class="text-left mb-0 md:mb-2">
+                                <span class="text-gray-500 block font-medium">TOTAL COMPOUND</span>
+                                <span class="text-gray-400 text-[8px] md:text-[9px] block mt-1" id="compoundTotalDisplay">TOTAL ASET: $3,138</span>
+                            </div>
+                            <div class="text-right md:text-left">
+                                <span class="text-white font-normal text-sm md:text-base block" id="totalProfitNet">+$2,138</span>
+                                <span class="text-emerald-400 font-normal text-[9px] md:text-[10px] block mt-0.5" id="roiPercent">+213.8%</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW BLOCK: Line Chart Berbentuk Persegi Panjang dari kiri ke kanan -->
+            <div class="w-full mt-8 md:mt-12 reveal relative bg-black rounded-none p-6 md:p-8 overflow-hidden shadow-2xl border border-gray-800">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between md:items-end border-b border-gray-800 pb-4 md:pb-6 mb-6">
+                    <div>
+                        <h4 class="text-lg md:text-xl font-normal text-white mb-1">Proyeksi Kurva Pertumbuhan</h4>
+                        <p class="text-gray-500 text-[9px] md:text-[10px] font-mono uppercase tracking-widest font-light">Eksponensial (Efek Bola Salju) vs Linear</p>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <span class="inline-flex items-center gap-2 text-[9px] md:text-[10px] font-mono text-gray-400 border border-gray-700 px-3 py-1.5 bg-gray-900">
+                            <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> GRAFIK REAL-TIME
+                        </span>
+                    </div>
+                </div>
+                <!-- Canvas untuk Chart.js -->
+                <div class="relative z-10 w-full h-[250px] md:h-[350px]">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION: THE QUANTUM LEAP -->
+    <section class="py-16 md:py-32 bg-white text-black border-b border-gray-200">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <div class="flex flex-col md:flex-row gap-10 md:gap-16 items-center text-center md:text-left">
+                <div class="w-full md:w-1/2 fade-in-up order-2 md:order-1">
+                    <span class="text-gray-500 font-medium text-[9px] md:text-[10px] tracking-widest uppercase mb-4 block">Exponential Growth</span>
+                    <h2 class="text-2xl md:text-4xl mb-4 md:mb-6 leading-tight font-light text-black">Gaji vs <br class="hidden md:block"> <span class="italic text-gray-400">Skill.</span></h2>
+                    <p class="text-xs md:text-base text-gray-600 leading-relaxed mb-6 font-light">
+                        Gaji Anda naik secara linear (5-10% per tahun). Skill trading Anda, jika dikompaun, tumbuh secara eksponensial.
+                        <br><br>
+                        Satu tahun fokus di LEODRA bisa menggantikan 10 tahun kerja korporat. Ini bukan janji cepat kaya, ini adalah matematika leverage.
+                    </p>
+                </div>
+                <div class="w-full md:w-1/2 relative fade-in-up order-1 md:order-2 px-4 md:px-0">
+                    <div class="h-40 md:h-56 border-l border-b border-gray-300 relative w-full">
+                        <div class="absolute bottom-0 left-0 w-full h-[30%] border-t border-gray-300 border-dashed" style="transform: skewY(-10deg); transform-origin: bottom left;"></div>
+                        <span class="absolute right-0 top-[60%] text-gray-500 text-[9px] md:text-[10px] bg-white px-1 font-light">Corporate Salary</span>
+                        <svg class="absolute bottom-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <path d="M0,100 Q50,90 100,0" fill="none" stroke="#000000" stroke-width="1.5" />
+                        </svg>
+                        <span class="absolute right-0 top-0 text-black text-[9px] md:text-[10px] font-medium bg-white px-1">Trading Skill</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CALL TO ACTION -->
+    <section id="join" class="py-20 md:py-32 bg-white border-t border-gray-200 text-center">
+        <div class="max-w-3xl mx-auto px-6 reveal">
+            <h2 class="text-2xl md:text-4xl font-serif mb-6 leading-tight font-light">Siap untuk Naik Kelas?</h2>
+            <p class="text-gray-500 mb-10 md:mb-12 text-sm md:text-lg font-light">Bergabunglah dengan lingkaran profesional yang memahami bahwa trading adalah bisnis, bukan permainan.</p>
+            <div class="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center">
+                <a href="login.html" class="btn-primary text-sm md:text-base shadow-xl flex items-center justify-center w-full sm:w-auto px-8 py-3 md:py-4">Bergabung Sekarang</a>
+                <a href="#vision" class="px-8 py-3 md:py-4 rounded-none border border-gray-300 hover:bg-gray-50 transition text-xs md:text-sm font-normal text-gray-600 flex items-center justify-center w-full sm:w-auto">Pelajari Lebih Lanjut</a>
+            </div>
+            <p class="mt-10 md:mt-12 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest font-light">Exclusive Membership • Limited Access</p>
+        </div>
+    </section>
+
+    <!-- ▼▼▼ FOOTER PROFESIONAL & DESKRIPTIF ▼▼▼ -->
+    <footer class="bg-[#14213d] text-white mt-auto w-full border-t border-[#14213d] relative z-10 reveal-on-scroll overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-8 mb-10">
+                
+                <!-- KIRI: Brand & Deskripsi -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-4 flex flex-col text-center sm:text-left">
+                    <span class="font-light text-lg md:text-xl tracking-widest text-white font-merriweather block mb-4">LEODRA</span>
+                    <p class="text-[11px] md:text-xs text-slate-300 leading-relaxed text-justify sm:text-left pr-0 md:pr-4">
+                        Platform manajemen risiko dan analitik trading profesional. <br class="hidden lg:block mb-2">
+                        <strong class="font-medium text-white">Keunggulan Eksklusif:</strong> Satu-satunya layanan dengan integrasi otomatis <span class="font-medium">Backtest berbasis Excel (TF)</span>, presisi kustomisasi <em>Take Profit/Risk Ratio</em> dinamis, serta analitik probabilitas performa mendalam yang tidak tersedia pada kalkulator trading konvensional.
+                    </p>
+                </div>
+
+                <!-- TENGAH: Menu Navigasi -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-5 w-full">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 w-full text-center sm:text-left">
+                        
+                        <!-- Kolom 1: Solusi & Bantuan -->
+                        <div class="flex flex-col items-center sm:items-start gap-8">
+                            <!-- Bagian Solusi -->
+                            <div class="flex flex-col items-center sm:items-start w-full">
+                                <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Solusi</h4>
+                                <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-normal tracking-wide text-slate-300">
+                                    <a href="belajardanmenghasilkan.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Belajar & Menghasilkan</span></a>
+                                    <a href="untukbisnis.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Untuk Bisnis</span></a>
+                                    <a href="untukpendidikan.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Untuk Pendidikan</span></a>
+                                </div>
+                            </div>
+                            
+                            <!-- Bagian Bantuan -->
+                            <div class="flex flex-col items-center sm:items-start w-full">
+                                <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Bantuan</h4>
+                                <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-normal tracking-wide text-slate-300">
+                                    <a href="pusatbantuanumum.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Pusat Bantuan Umum</span></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kolom 2: Perusahaan -->
+                        <div class="flex flex-col items-center sm:items-start w-full">
+                            <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Perusahaan</h4>
+                            <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-normal tracking-wide text-slate-300">
+                                <a href="tentangleodra.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Tentang Leodra</span></a>
+                                <a href="visimisi.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Visi & Misi</span></a>
+                                <a href="nilainilaileodra.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Nilai - nilai Leodra</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Kolom 3: Utama -->
+                        <div class="flex flex-col items-center sm:items-start w-full col-span-2 sm:col-span-1 mt-6 sm:mt-0">
+                            <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 w-full text-center sm:text-left">Utama</h4>
+                            <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-normal tracking-wide text-slate-300">
+                                <a href="index.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Home</span></a>
+                                <a href="index.html#vision" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Prinsip Dasar</span></a>
+                                <a href="index.html#stats" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Fakta Pasar</span></a>
+                                <a href="index.html#prob" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Sistem</span></a>
+                                <a href="login.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500 flex-shrink-0"></i> <span class="text-left">Daftar</span></a>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- KANAN: Terhubung -->
+                <div class="col-span-1 sm:col-span-2 md:col-span-3 flex flex-col items-center justify-start w-full">
+                    <div class="w-full max-w-[160px]">
+                        <h4 class="text-[10px] font-medium tracking-widest uppercase text-slate-400 mb-4 border-b border-white/10 pb-2 text-center">Terhubung</h4>
+                        <div class="flex flex-col items-center gap-4 w-full justify-center">
+                            <a href="https://instagram.com" target="_blank" class="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors group">
+                                <span class="text-[10px] md:text-[11px] font-normal tracking-wider uppercase whitespace-nowrap">Instagram</span>
+                                <i data-lucide="instagram" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110 transition-transform flex-shrink-0"></i>
+                            </a>
+                            <a href="mailto:support@leodra.com" class="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors group" title="Email Support">
+                                <span class="text-[10px] md:text-[11px] font-normal tracking-wider uppercase whitespace-nowrap">Support</span>
+                                <i data-lucide="mail" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110 transition-transform flex-shrink-0"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Bawah: Disclaimer & Copyright -->
+            <div class="border-t border-white/10 pt-6 flex flex-col lg:flex-row justify-between items-center gap-6 text-[9px] md:text-[10px] text-slate-400 text-center lg:text-left">
+                <div class="max-w-4xl leading-relaxed">
+                    <strong class="font-medium text-slate-300">Peringatan Risiko:</strong> Trading pada instrumen keuangan membawa tingkat risiko tinggi. LEODRA adalah alat bantu analisis dan tidak menyediakan saran investasi. 
+                    <span class="inline-block mt-2 lg:mt-0 lg:ml-2">
+                        <a href="#" class="hover:text-slate-300 underline transition-colors whitespace-nowrap">Syarat & Ketentuan</a> &bull; 
+                        <a href="#" class="hover:text-slate-300 underline transition-colors whitespace-nowrap">Kebijakan Privasi</a>
+                    </span>
+                </div>
+                
+                <div class="flex flex-col items-center lg:items-end gap-2 flex-shrink-0 min-w-max">
+                    <div class="flex items-center gap-3 font-normal tracking-wide">
+                        <span class="flex items-center gap-1.5 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse"></span> Sistem Normal</span>
+                        <span class="text-white/20">|</span>
+                        <span class="whitespace-nowrap">Versi 1.2.0</span>
+                    </div>
+                    <p class="whitespace-nowrap">&copy; 2026 LEODRA Analytics. Hak Cipta Dilindungi.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FLOATING WHATSAPP BUTTON (Soft & Friendly Chat Bubble) -->
+    <a href="https://wa.me/6281234567890" target="_blank" class="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[100] flex flex-col items-end group hover:no-underline">
+        
+        <!-- Teks Singkat di Atas Icon (Soft & Friendly) -->
+        <div class="mb-3 bg-white text-slate-600 text-xs md:text-sm font-medium px-6 py-3.5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 whitespace-nowrap flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 origin-bottom-right" style="border-radius: 9999px !important;">
+            <span>Halo kak! Ada yang bisa kami bantu hari ini?</span>
+        </div>
+
+        <!-- Tombol WA Utama (Diperbesar) -->
+        <div class="relative mr-1">
+            <div class="absolute inset-0 bg-[#25D366] wa-circle animate-ping opacity-20 group-hover:opacity-40 transition duration-300"></div>
+            <div class="relative bg-[#25D366] w-14 h-14 md:w-16 md:h-16 flex items-center justify-center wa-circle shadow-2xl hover:bg-[#128C7E] hover:-translate-y-1 transition-all duration-300">
+                <svg class="w-7 h-7 md:w-8 md:h-8 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+            </div>
+        </div>
+    </a>
+
+    <!-- SCRIPTS -->
+    <script>
+        lucide.createIcons();
+
+        // Particles
+        const particlesContainer = document.getElementById('particles-js');
+        if (particlesContainer) {
+            for (let i = 0; i < 30; i++) { 
+                const p = document.createElement('div');
+                p.style.cssText = `position:absolute; width:2px; height:2px; background:rgba(0,0,0,0.1); border-radius:50%; top:${Math.random()*100}%; left:${Math.random()*100}%;`;
+                p.animate([
+                    { transform: 'translate(0,0)' },
+                    { transform: `translate(${(Math.random()-0.5)*20}vw, ${(Math.random()-0.5)*20}vh)` }
+                ], { duration: (Math.random()*20+10)*1000, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+                particlesContainer.appendChild(p);
+            }
+        }
+
+        // Animasi Scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) { 
+                    entry.target.classList.add('active'); 
+                } else {
+                    entry.target.classList.remove('active');
+                }
+            });
+        }, { threshold: 0.1 }); 
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        document.querySelectorAll('.fade-in-up').forEach(el => {
+            el.classList.add('reveal'); 
+            observer.observe(el);
+        });
+
+        // Header Scroll Shadow
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('header');
+            if (window.scrollY > 50) { nav.classList.add('shadow-sm'); } else { nav.classList.remove('shadow-sm'); }
+        });
+
+        // Waktu Real-time (Tanggal Header)
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+
+            const elDate = document.getElementById("headerRealTimeDate");
+            if (elDate) elDate.textContent = dateStr;
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 60000); 
+
+        let growthChartInstance = null; // Variabel global untuk menyimpan data Grafik Line
+
+        // CALCULATOR LOGIC (UPDATED DENGAN LOGIKA PERBANDINGAN EKSTRA PROFIT DAN GRAFIK LINE)
+        function calculateGrowth() {
+            let principal = parseFloat(document.getElementById('initialCapital').value) || 0;
+            let rate = parseFloat(document.getElementById('monthlyReturn').value) || 0;
+            let months = parseInt(document.getElementById('duration').value) || 1;
+
+            document.getElementById('durationValue').innerText = months + " Bulan";
+
+            let r = rate / 100;
+
+            // Arrays untuk merekam data bulan per bulan agar bisa digambar di Line Chart
+            let labelsArray = [];
+            let compoundDataArray = [];
+            let linearDataArray = [];
+
+            let iterCompound = principal;
+            let iterLinear = principal;
+
+            labelsArray.push('Bulan 0');
+            compoundDataArray.push(principal);
+            linearDataArray.push(principal);
+
+            for (let i = 1; i <= months; i++) {
+                labelsArray.push('Bulan ' + i);
+                iterCompound = iterCompound * (1 + r); // Rumus bulanan compound
+                iterLinear = principal + (principal * r * i); // Rumus bulanan linear
+                
+                compoundDataArray.push(iterCompound);
+                linearDataArray.push(iterLinear);
+            }
+
+            // LOGIKA COMPOUNDING (Nilai Akhir)
+            let currentBalance = iterCompound;
+            
+            // LOGIKA TANPA COMPOUND (Nilai Akhir)
+            let linearTotal = iterLinear;
+            
+            // 1. Keuntungan Tanpa Compound
+            let linearProfit = linearTotal - principal;
+            let linearProfitPct = principal > 0 ? (linearProfit / principal) * 100 : 0;
+            
+            // 2. Keuntungan Dengan Compound (Total Profit)
+            let totalProfitNet = currentBalance - principal;
+            let roiPct = principal > 0 ? (totalProfitNet / principal) * 100 : 0;
+            
+            // 3. Selisih Ekstra Profit (Keuntungan Tambahan murni karena Leodra/Compound)
+            let extraProfit = currentBalance - linearTotal;
+            let extraProfitPct = principal > 0 ? (extraProfit / principal) * 100 : 0;
+
+            const formatCurrency = (num) => {
+                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
+            };
+
+            // Update UI: Header Result
+            document.getElementById('finalBalance').innerText = formatCurrency(currentBalance);
+            document.getElementById('totalGrowthDisplay').innerText = "+" + roiPct.toFixed(1) + "% TOTAL ROI";
+            
+            // Update UI: Grafik Bar
+            document.getElementById('linearValue').innerText = formatCurrency(linearTotal);
+            document.getElementById('compoundDisplay').innerText = formatCurrency(currentBalance);
+
+            // Update UI: Footer Stats
+            let elLinearProfit = document.getElementById('linearProfitDisplay');
+            if(elLinearProfit) {
+                // Kiri: Profit Linear (Tanpa Compound)
+                elLinearProfit.innerText = "+" + formatCurrency(linearProfit);
+                document.getElementById('linearProfitPct').innerText = "+" + linearProfitPct.toFixed(1) + "%";
+                let elLinearTotal = document.getElementById('linearTotalDisplay');
+                if(elLinearTotal) elLinearTotal.innerText = "TOTAL ASET: " + formatCurrency(linearTotal);
+                
+                // Tengah: Ekstra Profit (Selisih)
+                document.getElementById('extraProfitDisplay').innerText = "+" + formatCurrency(extraProfit);
+                document.getElementById('extraProfitPct').innerText = "+" + extraProfitPct.toFixed(1) + "%";
+                
+                // Kanan: Total Profit Keseluruhan
+                document.getElementById('totalProfitNet').innerText = "+" + formatCurrency(totalProfitNet);
+                document.getElementById('roiPercent').innerText = "+" + roiPct.toFixed(1) + "%";
+                let elCompoundTotal = document.getElementById('compoundTotalDisplay');
+                if(elCompoundTotal) elCompoundTotal.innerText = "TOTAL ASET: " + formatCurrency(currentBalance);
+            }
+
+            // Animasi Dinamis Tinggi Chart Bar
+            let maxBarHeight = 100; // Diubah jadi 100 agar bar dapat mengisi Area Track secara maksimal
+            let maxDisplayValue = Math.max(linearTotal, currentBalance);
+            
+            let cHeight = (currentBalance / maxDisplayValue) * maxBarHeight;
+            let lHeight = (linearTotal / maxDisplayValue) * maxBarHeight;
+
+            if (cHeight < 5) cHeight = 5;
+            if (lHeight < 5) lHeight = 5;
+
+            let compoundBar = document.getElementById('compoundBar');
+            let linearBar = document.getElementById('linearBar');
+            if (compoundBar && linearBar) {
+                compoundBar.style.height = `${cHeight}%`;
+                linearBar.style.height = `${lHeight}%`;
+            }
+
+            // --- EKSEKUSI RENDER CHART.JS (LINE CHART BARU) ---
+            const canvasEl = document.getElementById('growthChart');
+            if (canvasEl) {
+                const ctx = canvasEl.getContext('2d');
+                
+                // Hancurkan chart sebelumnya jika ada agar tidak tumpang tindih
+                if (growthChartInstance) {
+                    growthChartInstance.destroy();
+                }
+
+                // Efek gradasi untuk area di bawah garis putih
+                let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                growthChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labelsArray,
+                        datasets: [
+                            {
+                                label: 'Dengan LEODRA (Compounding)',
+                                data: compoundDataArray,
+                                borderColor: '#ffffff', // Putih terang
+                                backgroundColor: gradient,
+                                borderWidth: 2.5,
+                                fill: true,
+                                tension: 0.4, // Membuat kurva melengkung mulus (Eksponensial)
+                                pointRadius: 0, // Sembunyikan titik agar bersih
+                                pointHitRadius: 20, // Area sensor mouse diperbesar
+                            },
+                            {
+                                label: 'Tanpa Compound (Linear)',
+                                data: linearDataArray,
+                                borderColor: '#6b7280', // Abu-abu
+                                borderWidth: 2,
+                                borderDash: [5, 5], // Garis putus-putus
+                                fill: false,
+                                tension: 0, // Garis lurus patah (Linear)
+                                pointRadius: 0,
+                                pointHitRadius: 20,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false, // Menampilkan tooltip dari kedua garis saat disentuh vertikal
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                align: 'end',
+                                labels: { 
+                                    color: '#9ca3af', 
+                                    font: { family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', size: 10 },
+                                    boxWidth: 12,
+                                    usePointStyle: true,
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0,0,0,0.9)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#ffffff',
+                                borderColor: '#333333',
+                                borderWidth: 1,
+                                padding: 12,
+                                titleFont: { family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', size: 11 },
+                                bodyFont: { family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', size: 12 },
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false }, // Sembunyikan garis vertikal
+                                ticks: { 
+                                    color: '#6b7280', 
+                                    font: { family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', size: 9 }, 
+                                    maxTicksLimit: 12 
+                                }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255,255,255,0.05)', borderDash: [2, 4] }, // Garis horizontal putus-putus redup
+                                ticks: {
+                                    color: '#6b7280', 
+                                    font: { family: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', size: 10 },
+                                    callback: function(value) {
+                                        return '$' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value); // Format singkatan (contoh $10k)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        if (document.getElementById('initialCapital')) {
+             calculateGrowth();
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const overlay = document.getElementById('mobile-nav-overlay');
+            if(overlay) {
+                overlay.classList.toggle('open');
+                document.body.classList.toggle('overflow-hidden');
+            }
+        }
+
+        // Mobile Accordion Toggle
+        function toggleMobileAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                content.classList.add('flex');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                content.classList.remove('flex');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function openMessageModal(message) {
+            document.getElementById('messageModalContent').innerText = message;
+            document.getElementById('messageModal').classList.add('open');
+        }
+
+        function closeMessageModal() {
+            document.getElementById('messageModal').classList.remove('open');
+        }
+
+        function performSearch(inputId) {
+            const query = document.getElementById(inputId).value;
+            if(query) {
+                window.open(`https://www.google.com/search?q=site:leodra.com ${query}`, '_blank');
+            } else {
+                openMessageModal("Silakan masukkan kata kunci.");
+            }
+        }
+
+        // --- HIGHLIGHT MENU LAMA (Scroll & Click) ---
+        const scrollLinks = document.querySelectorAll('.nav-link-scroll');
+        const sections = document.querySelectorAll('section');
+        let isClickingScrollNav = false;
+
+        function updateActiveScrollLink() {
+            if (isClickingScrollNav) return;
+
+            let current = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight - 50) {
+                const lastNav = scrollLinks[scrollLinks.length - 1];
+                if(lastNav) current = lastNav.getAttribute('href').substring(1);
+            }
+
+            scrollLinks.forEach(link => {
+                link.classList.remove('border-black', 'text-black');
+                link.classList.add('border-transparent');
+                
+                if (current && link.getAttribute('href') === `#${current}`) {
+                    link.classList.remove('border-transparent');
+                    link.classList.add('border-black', 'text-black');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveScrollLink);
+        
+        scrollLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                isClickingScrollNav = true;
+
+                scrollLinks.forEach(l => {
+                    l.classList.remove('border-black', 'text-black');
+                    l.classList.add('border-transparent');
+                });
+                this.classList.remove('border-transparent');
+                this.classList.add('border-black', 'text-black');
+
+                setTimeout(() => {
+                    isClickingScrollNav = false;
+                }, 800);
+            });
+        });
+
+        // --- APPLE STYLE MEGA MENU LOGIC ---
+        const menuData = {
+            home: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Utama</h4>
+                        <ul class="space-y-4">
+                            <li><a href="index.html" class="text-xl md:text-2xl font-medium text-black border-b-[3px] border-black transition-all pb-1 inline-block">Halaman awal</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            solusi: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Layanan Kami</h4>
+                        <ul class="space-y-4">
+                            <li><a href="belajardanmenghasilkan.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Belajar dan menghasilkan</a></li>
+                            <li><a href="untukbisnis.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Untuk bisnis</a></li>
+                            <li><a href="untukpendidikan.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Untuk pendidikan</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            perusahaan: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Tentang Kami</h4>
+                        <ul class="space-y-4">
+                            <li><a href="tentangleodra.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Tentang Leodra</a></li>
+                            <li><a href="visimisi.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Visi & Misi</a></li>
+                            <li><a href="nilainilaileodra.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Nilai - nilai Leodra</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            bantuan: `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+                    <div class="md:col-span-1">
+                        <h4 class="text-[11px] font-medium text-gray-500 mb-5 tracking-widest uppercase">Dukungan</h4>
+                        <ul class="space-y-4">
+                            <li><a href="pusatbantuanumum.html" class="text-xl md:text-2xl font-light text-gray-900 hover:text-slate-400 border-b-[3px] border-transparent hover:border-black transition-all pb-1 inline-block">Pusat Bantuan Umum</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `
+        };
+
+        const navItemsWrapper = document.querySelectorAll('.nav-item-wrapper');
+        const megaMenu = document.getElementById('mega-menu');
+        const megaMenuContent = document.getElementById('mega-menu-content');
+        const navOverlay = document.getElementById('nav-overlay');
+        const headerEl = document.querySelector('header');
+        let menuTimeout;
+
+        // Fungsi untuk menghapus semua penanda (garis bawah hitam) pada Mega Menu
+        function resetMegaMenuHighlights() {
+            navItemsWrapper.forEach(item => {
+                const link = item.querySelector('.nav-link');
+                if(link) {
+                    if (item.classList.contains('active-page-wrapper')) {
+                        // Pastikan menu halaman aktif tidak terhapus penandanya
+                        link.classList.add('border-black', 'text-black', 'font-medium');
+                        link.classList.remove('border-transparent');
+                    } else {
+                        // Menu lain dikembalikan ke transparan
+                        link.classList.remove('border-black', 'text-black', 'font-medium');
+                        link.classList.add('border-transparent');
+                    }
+                }
+            });
+        }
+
+        function openAppleMenu(menuKey) {
+            clearTimeout(menuTimeout);
+            
+            // Hapus penanda dari menu lain
+            resetMegaMenuHighlights();
+
+            // Berikan penanda (garis hitam & teks hitam) ke menu yang sedang aktif/dihover
+            const activeWrapper = Array.from(navItemsWrapper).find(item => item.getAttribute('data-menu') === menuKey);
+            if (activeWrapper) {
+                const activeLink = activeWrapper.querySelector('.nav-link');
+                if (activeLink) {
+                    activeLink.classList.remove('border-transparent');
+                    activeLink.classList.add('border-black', 'text-black');
+                }
+            }
+            
+            // Masukkan data sub-menu sesuai yang dihover
+            if(menuData[menuKey]) {
+                megaMenuContent.style.opacity = '0'; // Sembunyikan sebentar untuk transisi
+                setTimeout(() => {
+                    megaMenuContent.innerHTML = menuData[menuKey];
+                    megaMenuContent.style.opacity = '1'; // Munculkan kembali konten
+                }, 150);
+            }
+
+            // Jalankan animasi dropdown & blur
+            megaMenu.classList.add('open');
+            navOverlay.classList.add('open');
+            
+            // Membuat warna background header jadi putih solid (menghilangkan tembus pandang)
+            headerEl.classList.remove('bg-white/90', 'backdrop-blur-md');
+            headerEl.classList.add('bg-white');
+        }
+
+        function closeAppleMenu() {
+            // Beri jeda sedikit agar menu tidak langsung hilang saat kursor meleset
+            menuTimeout = setTimeout(() => {
+                megaMenu.classList.remove('open');
+                navOverlay.classList.remove('open');
+                megaMenuContent.style.opacity = '0';
+                
+                // Hapus penanda garis hitam saat menu pop-up tertutup
+                resetMegaMenuHighlights();
+                
+                // Kembalikan efek kaca pada header setelah dropdown tertutup rapat
+                setTimeout(() => {
+                    if(!megaMenu.classList.contains('open')){
+                        headerEl.classList.remove('bg-white');
+                        headerEl.classList.add('bg-white/90', 'backdrop-blur-md');
+                    }
+                }, 400);
+            }, 100); 
+        }
+
+        // Daftarkan aksi hover (arahkan kursor)
+        navItemsWrapper.forEach(item => {
+            item.addEventListener('mouseenter', () => openAppleMenu(item.getAttribute('data-menu')));
+            item.addEventListener('mouseleave', closeAppleMenu);
+        });
+
+        // Pertahankan menu tetap terbuka saat kursor menjelajahi area dalam Dropdown
+        megaMenu.addEventListener('mouseenter', () => clearTimeout(menuTimeout));
+        megaMenu.addEventListener('mouseleave', closeAppleMenu);
+
+    </script>
+</body>
+</html>

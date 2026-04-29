@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portofolio Analis: Dr. Alexander Wong - LEODRA</title>
+
+    <!-- FIX: Script Anti-Error ResizeObserver -->
+    <script>
+      const _originalError = console.error;
+      console.error = (...args) => {
+        if (/ResizeObserver loop/.test(args[0])) return;
+        _originalError.apply(console, args);
+      };
+      window.addEventListener('error', e => {
+        if (e.message === 'ResizeObserver loop limit exceeded') {
+          e.stopImmediatePropagation();
+        }
+      });
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Merriweather:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Gaya Global & Font Khusus Header */
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
+            color: #334155; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        @media screen and (min-width: 1280px) { body { zoom: 0.8; } }
+        
+        main { margin-top: 6rem !important; }
+        @media screen and (min-width: 768px) { main { margin-top: 7rem !important; } }
+        
+        /* Sidebar Animasi & Collapse */
+        #desktop-sidebar { 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            overflow-x: hidden; 
+            white-space: nowrap; 
+        }
+        #desktop-sidebar.is-collapsed { width: 5.5rem; }
+        #desktop-sidebar.is-collapsed:hover { width: 16rem; box-shadow: 4px 0 24px rgba(0,0,0,0.08); }
+        
+        #desktop-sidebar.is-collapsed:not(:hover) a.flex,
+        #desktop-sidebar.is-collapsed:not(:hover) button.flex {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            justify-content: center !important;
+        }
+
+        .sidebar-text { 
+            transition: opacity 0.2s, max-width 0.3s; 
+            max-width: 200px; 
+            overflow: hidden; 
+            display: inline-block;
+            vertical-align: middle;
+        }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-text { opacity: 0; max-width: 0; }
+        #desktop-sidebar.is-collapsed:not(:hover) .sidebar-icon-margin { margin-right: 0; }
+        .sidebar-icon-margin { transition: margin-right 0.3s; margin-right: 0.75rem; }
+        
+        #toggle-sidebar-btn { transition: transform 0.3s; }
+        #desktop-sidebar.is-collapsed:not(:hover) #toggle-sidebar-btn { transform: rotate(180deg); }
+        
+        #main-wrapper { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Kustomisasi elemen statistik (Clean Theme) */
+        .clean-card { background: white; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .month-details-row { display: none; }
+        .month-details-row.open { display: table-row; }
+        
+        /* Style untuk tabel bulanan horizontal lengkap */
+        .monthly-table { font-size: 0.65rem; width: 100%; min-width: 800px; }
+        .monthly-table th, .monthly-table td { padding: 0.6rem 0.75rem; text-align: center; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+        .monthly-table th { font-weight: 700; letter-spacing: 0.05em; font-size: 0.6rem; }
+        /* FIX SCROLL HP: Menghapus position: sticky & border manual agar semua data bisa di-scroll & garis dapat disejajarkan oleh Tailwind */
+        .monthly-table th:first-child, .monthly-table td:first-child { text-align: left; font-size: 0.65rem; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- ▼▼▼ HEADER UTAMA LEODRA ▼▼▼ -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+            
+            <!-- 1. LOGO (KIRI) -->
+            <div class="flex items-center flex-shrink-0 cursor-pointer" onclick="window.location.href='index.html'">
+                <span class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather">LEODRA</span>
+            </div>
+
+            <!-- 2. INDIKATOR WAKTU & TANGGAL (TENGAH) -->
+            <div class="flex-1 flex flex-col justify-center items-center px-1 overflow-hidden">
+                <span id="headerRealTimeClock" class="text-red-600 font-medium text-[11px] sm:text-[12px] md:text-sm tracking-wide leading-none whitespace-nowrap mb-0.5" style="font-family: 'Inter', sans-serif;">
+                    --:--:--
+                </span>
+                <span id="headerRealTimeDate" class="text-black font-light text-[9px] sm:text-[10px] md:text-xs tracking-wide leading-none whitespace-nowrap truncate max-w-full" style="font-family: 'Inter', sans-serif;">
+                    -- -- ----
+                </span>
+            </div>
+
+            <!-- 3. AREA KANAN (USER & MENU MOBILE) -->
+            <div class="flex items-center justify-end gap-2 md:gap-4 flex-shrink-0 min-w-[60px]">
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="text-right">
+                        <p id="desktop-user-info" class="text-sm font-light tracking-wide text-gray-900 leading-tight font-merriweather">Loading...</p>
+                        <div class="flex items-center justify-end gap-1.5 mt-1">
+                            <div class="w-1.5 h-1.5 rounded-none bg-green-500 animate-pulse"></div>
+                            <span class="text-[10px] text-green-600 font-bold tracking-wider uppercase">Online</span>
+                        </div>
+                    </div>
+                    <img id="desktop-user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=0f172a&color=fff" alt="Profil User" class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0">
+                </div>
+                
+                <button onclick="toggleMenu()" id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-none transition-colors relative w-10 h-10 flex items-center justify-center overflow-hidden" aria-label="Toggle Menu">
+                    <span id="icon-menu" class="absolute transition-all duration-300 transform scale-100 rotate-0 opacity-100 flex items-center justify-center w-full h-full">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </span>
+                    <span id="icon-close" class="absolute transition-all duration-300 transform scale-0 -rotate-90 opacity-0 flex items-center justify-center w-full h-full text-rose-600">
+                        <i data-lucide="x" class="w-7 h-7"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ▼▼▼ MENU MOBILE (OVERLAY - CLEAN & MINIMALIST) ▼▼▼ -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white/90 backdrop-blur-md z-[40] transform translate-x-full transition-transform duration-400 ease-in-out md:hidden flex flex-col pt-20 pb-4 overflow-y-auto">
+        
+        <!-- Bagian Info Akun (Jarak padding atas dan bawah disamakan agar presisi) -->
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
+            <img id="mobile-user-avatar" src="https://ui-avatars.com/api/?name=Guest&background=0f172a&color=fff" alt="Profil User" class="w-11 h-11 rounded-full object-cover border border-slate-200 shadow-sm flex-shrink-0">
+            <div class="overflow-hidden w-full">
+                <!-- REQ: Font standar (sans-serif), ukuran minimalis tapi tegas -->
+                <p id="mobile-user-name" class="text-[14px] font-sans font-bold text-slate-900 leading-tight tracking-wide truncate">Guest</p>
+                <p id="mobile-user-email" class="text-[11px] font-sans text-slate-500 font-medium tracking-wide truncate mt-0.5">Belum login</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span class="text-[8px] text-emerald-600 font-bold uppercase tracking-wider">Online</span>
+                    <span class="text-slate-300 mx-1 text-[8px]">•</span>
+                    <span id="mobile-user-time" class="text-[8px] text-slate-400 font-mono uppercase tracking-wider">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bagian Navigasi (Dibuat Rapat, Teks Kecil tapi Tegas/Semibold) -->
+        <div class="flex-1 overflow-y-auto px-6 py-2 flex flex-col w-full">
+            <ul class="flex flex-col w-full text-left">
+                <li class="border-b border-slate-100">
+                    <a href="index.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Home</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="login.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Login</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="beranda.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Beranda</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="berandatrader.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Beranda Trader</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="berandaanalis.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Beranda Analis</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="edukasisystem.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Education for System</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                
+                <!-- MENU AKTIF MOBILE: TOP ANALIS DAN TRADER -->
+                <li class="border-b border-black">
+                    <a href="topanalisdantrader.html" class="flex items-center justify-between py-2.5 text-[13px] text-black font-bold transition-colors">
+                        <span>Top Analis Dan Trader</span> <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-black"></i>
+                    </a>
+                </li>
+                
+                <li class="border-b border-slate-100">
+                    <a href="investasi.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Investasi</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="backtest.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Backtest</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="langganan.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Langganan</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+                <li class="border-b border-slate-100">
+                    <a href="pengaturan.html" class="flex items-center justify-between py-2.5 text-[13px] text-slate-700 hover:text-black font-semibold transition-colors">
+                        <span>Pengaturan</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tombol Logout (Warna abu muda, teks hitam) -->
+        <div class="px-6 mt-4 pb-2 flex-shrink-0">
+            <button onclick="logout()" class="w-full py-3 text-black bg-slate-100 hover:bg-slate-200 transition-colors text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 shadow-sm">
+                Keluar Sesi
+            </button>
+        </div>
+    </div>
+
+    <!-- ▼▼▼ SIDEBAR DESKTOP (KIRI) ▼▼▼ -->
+    <aside id="desktop-sidebar" class="fixed left-0 top-24 bottom-0 w-64 bg-white border-r border-slate-200 z-40 hidden md:flex flex-col py-4 group">
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <div class="flex items-center justify-between px-2 mb-4">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest sidebar-text">Menu Navigasi</p>
+                <button onclick="toggleSidebarCollapse()" id="toggle-sidebar-btn" class="p-1 rounded-none text-slate-400 hover:text-[#14213d] hover:bg-slate-100 transition-colors">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <a href="index.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="home" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Home</span>
+            </a>
+            <a href="login.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="log-in" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Login</span>
+            </a>
+            <a href="beranda.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="globe" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Beranda</span>
+            </a>
+            <a href="berandatrader.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Beranda Trader</span>
+            </a>
+            <a href="berandaanalis.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="activity" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Beranda Analis</span>
+            </a>
+            <a href="edukasisystem.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="graduation-cap" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Education for System</span>
+            </a>
+            
+            <!-- MENU AKTIF SIDEBAR: TOP ANALIS & TRADER -->
+            <a href="topanalisdantrader.html" class="flex items-center px-4 py-2 text-[14px] font-medium rounded-none bg-[#14213d] text-white shadow-md shadow-slate-200 transition-all duration-300 mt-2">
+                <i data-lucide="award" class="w-[18px] h-[18px] text-white flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Top Analis Dan Trader</span>
+            </a>
+            
+            <a href="investasi.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="trending-up" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Investasi</span>
+            </a>
+            <a href="backtest.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300">
+                <i data-lucide="history" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Backtest</span>
+            </a>
+            <a href="langganan.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="credit-card" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Langganan</span>
+            </a>
+            <a href="pengaturan.html" class="flex items-center px-4 py-2 text-[14px] font-medium text-slate-500 hover:text-[#14213d] hover:bg-[#14213d]/10 rounded-none transition-all duration-300 mt-2">
+                <i data-lucide="settings" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Pengaturan</span>
+            </a>
+        </nav>
+        
+        <div class="px-4 pb-2 mt-auto">
+            <div class="h-px bg-slate-100 w-full mb-3"></div>
+            <button onclick="logout()" class="w-full flex items-center px-4 py-2.5 text-[14px] font-medium rounded-none text-rose-600 hover:bg-rose-50 transition-all duration-300 mb-3">
+                <i data-lucide="log-out" class="w-[18px] h-[18px] flex-shrink-0 sidebar-icon-margin"></i>
+                <span class="sidebar-text">Logout</span>
+            </button>
+            <p class="text-[10px] text-slate-400 font-medium text-center w-full sidebar-text">© 2026 LEODRA</p>
+        </div>
+    </aside>
+
+    <!-- ▼▼▼ WRAPPER UNTUK KONTEN UTAMA ▼▼▼ -->
+    <div id="main-wrapper" class="md:ml-64 w-full md:w-[calc(100%-16rem)] flex-grow flex flex-col transition-all duration-300 relative bg-[#f8fafc]">
+        <main class="flex-grow max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10 w-full mb-10">
+            
+            <!-- Breadcrumbs -->
+            <nav class="flex items-center gap-2 text-[11px] font-medium text-slate-500 mb-5 uppercase tracking-widest">
+                <a href="javascript:void(0)" onclick="goBackDynamic()" class="hover:text-blue-600 transition-colors flex items-center gap-1"><i data-lucide="arrow-left" class="w-3 h-3"></i> Kembali</a>
+                <span>/</span>
+                <span class="text-slate-800 font-bold">Portofolio Analis</span>
+            </nav>
+
+            <!-- Top Profile Section (Minimalist, Clean, & Sharp Block) -->
+            <div class="bg-white border border-slate-200 rounded-none p-5 md:p-6 mb-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                
+                <!-- Left: Identity -->
+                <div class="flex items-start md:items-center gap-4 w-full md:w-auto">
+                    <!-- PERBAIKAN: Avatar dibuat rounded-full dan warnanya disamakan persis dengan di card list -->
+                    <div class="relative w-12 h-12 sm:w-14 sm:h-14 bg-[#f8fafc] border border-[#cbd5e1] text-[#475569] flex items-center justify-center text-base sm:text-lg font-bold rounded-full shrink-0 shadow-sm">
+                        DA
+                        <div class="absolute -bottom-0.5 -right-0.5 z-10 bg-white rounded-full p-0.5 shadow-sm flex items-center justify-center">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-[#14213d] shrink-0 drop-shadow-sm" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" title="Mitra Terverifikasi">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25A1 1 0 0 1 12.8.7l2.87 1.9 3.35-.61a1 1 0 0 1 1.13.78l.74 3.33 2.92 1.77a1 1 0 0 1 .37 1.34L22.5 12l1.68 2.79a1 1 0 0 1-.37 1.34l-2.92 1.77-.74 3.33a1 1 0 0 1-1.13.78l-3.35-.61L12.8 23.3a1 1 0 0 1-1.6 0l-2.87-1.9-3.35.61a1 1 0 0 1-1.13-.78l-.74-3.33-2.92-1.77a1 1 0 0 1-.37-1.34L1.5 12l-1.68-2.79a1 1 0 0 1 .37-1.34l2.92-1.77.74-3.33A1 1 0 0 1 5.05 2l3.35.61L11.2.7a1 1 0 0 1 .8 0z" fill="currentColor"/>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M16.53 8.47a.75.75 0 0 1 0 1.06l-5.5 5.5a.75.75 0 0 1-1.06 0l-2.5-2.5a.75.75 0 1 1 1.06-1.06l1.97 1.97 4.97-4.97a.75.75 0 0 1 1.06 0z" fill="#ffffff"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col flex-1 min-w-0">
+                        <div class="flex flex-wrap items-start sm:items-center gap-2 mb-1.5">
+                            <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight break-words">
+                                Dr. Alexander Wong
+                            </h1>
+                            <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-600 border border-blue-100 text-[8px] px-1.5 py-0.5 rounded-none font-bold uppercase tracking-wider shrink-0 mt-0.5 sm:mt-0">
+                                <i data-lucide="award" class="w-2.5 h-2.5"></i> Rank 1
+                            </span>
+                        </div>
+                        
+                        <!-- PERBAIKAN: Penambahan badge "Trend" sesuai data spesialisasi metode -->
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <p class="text-[10px] sm:text-xs text-slate-500 font-medium uppercase tracking-wide break-words">XAUUSD | SWING</p>
+                            <span class="text-[7px] sm:text-[8px] px-1.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-500 rounded-sm uppercase tracking-widest font-bold flex items-center gap-1 shadow-sm">
+                                <i data-lucide="compass" class="w-2.5 h-2.5"></i> Trend
+                            </span>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <div class="flex items-center justify-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded-none w-fit">
+                                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E11D48] shrink-0 drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 16 C 8 7, 16 7, 21 16" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M12 2 L 13.2 7 L 18 8.2 L 13.2 9.4 L 12 14.2 L 10.8 9.4 L 6 8.2 L 10.8 7 Z" fill="currentColor" stroke="none"/>
+                                    <circle cx="12" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
+                                </svg>
+                                <!-- PERBAIKAN: Lencana diubah dari Oracle (13) menjadi Illuminator (10) -->
+                                <span class="text-[9px] sm:text-[10px] font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1">Illuminator <span class="text-[8px] text-slate-400 font-normal">(10 Lencana)</span></span>
+                            </div>
+                            
+                            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-medium text-slate-600">
+                                <span class="flex items-center gap-1.5 bg-slate-50 py-1.5 px-2 rounded-none border border-slate-200 w-fit"><i data-lucide="users" class="w-3 h-3 text-slate-400"></i> 12,450 Subs</span>
+                                <span class="flex items-center gap-1.5 bg-slate-50 py-1.5 px-2 rounded-none border border-slate-200 w-fit"><i data-lucide="target" class="w-3 h-3 text-slate-400"></i> Win Rate: <strong class="text-black">92.4%</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Achievements Data -->
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <span class="text-[7px] sm:text-[8px] font-bold text-[#14213d] border border-[#14213d]/20 font-sans tracking-widest uppercase bg-slate-50 px-1.5 py-0.5 rounded-none shadow-sm">TOP1ANALIS</span>
+                            <span class="text-[7px] sm:text-[8px] font-bold text-[#14213d] border border-[#14213d]/20 font-sans tracking-widest uppercase bg-slate-50 px-1.5 py-0.5 rounded-none shadow-sm">TOPKONSISTENSI</span>
+                            <span class="text-[7px] sm:text-[8px] font-bold text-[#14213d] border border-[#14213d]/20 font-sans tracking-widest uppercase bg-slate-50 px-1.5 py-0.5 rounded-none shadow-sm">TOPTRENDMARKET</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: CTA & Core Stats -->
+                <div class="flex flex-col sm:flex-row md:flex-col items-center md:items-end justify-between sm:justify-end gap-3 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
+                    <div class="text-center sm:text-right w-full sm:w-auto flex flex-col justify-center">
+                        <p class="text-[8px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">Biaya Langganan</p>
+                        <p class="text-sm font-mono font-bold text-slate-900 leading-none">Rp 250rb<span class="text-[10px] text-slate-500 font-sans">/bln</span></p>
+                    </div>
+                    <button class="w-full sm:w-auto bg-black hover:bg-slate-800 text-white px-6 py-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors rounded-none shadow-sm flex items-center justify-center gap-1.5 border border-black shrink-0">
+                        <i data-lucide="bell-ring" class="w-3.5 h-3.5"></i> Langganan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel & Statistik Jurnal Analis -->
+            <div class="space-y-6 flex flex-col mt-6">
+                <!-- TABEL JURNAL (Diambil dari Beranda Analis) -->
+                <div class="clean-card rounded-[1.5rem] overflow-hidden bg-white shadow-sm flex flex-col divide-y divide-slate-200 border border-slate-200">
+                    
+                    <!-- TABEL PENDING -->
+                    <div class="p-5 md:p-6">
+                        <div class="flex flex-col md:flex-row md:items-end justify-between mb-4 pb-3 gap-4 border-b border-slate-100">
+                            <div>
+                                <h3 class="font-bold text-sm text-black flex items-center gap-2 uppercase tracking-widest"><i data-lucide="clock" class="w-4 h-4 text-black"></i> Rencana Signal Baru (Pending)</h3>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto overflow-y-auto max-h-[350px] scrollbar-thin scrollbar-thumb-slate-300 rounded-xl border border-slate-200">
+                            <table class="w-full text-left whitespace-nowrap border-collapse bg-gray-50 text-black relative">
+                                <thead class="text-[9px] text-slate-600 uppercase tracking-widest bg-gray-200 border-y border-gray-300 sticky top-0 z-10 shadow-sm">
+                                    <tr>
+                                        <th class="p-3 font-bold">No</th>
+                                        <th class="p-3 font-bold">Waktu Dibuat</th>
+                                        <th class="p-3 font-bold">Aset</th>
+                                        <th class="p-3 font-bold">Tipe</th>
+                                        <th class="p-3 font-bold">Entry</th>
+                                        <th class="p-3 font-bold">SL</th>
+                                        <th class="p-3 font-bold">TP</th>
+                                        <th class="p-3 font-bold">Resiko Pips</th>
+                                        <th class="p-3 font-bold">Keuntungan Pips</th>
+                                        <th class="p-3 font-bold">RR</th>
+                                        <th class="p-3 font-bold">Sisa Waktu</th>
+                                        <th class="p-3 font-bold">Notes</th>
+                                        <th class="p-3 font-bold text-center">Status</th>
+                                        <th class="p-3 font-bold text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablePending" class="divide-y divide-white text-xs font-medium text-slate-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TABEL RUNNING -->
+                    <div class="p-5 md:p-6">
+                        <div class="flex flex-col md:flex-row md:items-end justify-between mb-4 pb-3 gap-4 border-b border-slate-100">
+                            <div>
+                                <h3 class="font-bold text-sm text-black flex items-center gap-2 uppercase tracking-widest"><i data-lucide="activity" class="w-4 h-4 text-black"></i> Rencana Signal Running</h3>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto overflow-y-auto max-h-[350px] scrollbar-thin scrollbar-thumb-slate-300 rounded-xl border border-slate-200">
+                            <table class="w-full text-left whitespace-nowrap border-collapse bg-gray-50 text-black relative">
+                                <thead class="text-[9px] text-slate-600 uppercase tracking-widest bg-gray-200 border-y border-gray-300 sticky top-0 z-10 shadow-sm">
+                                    <tr>
+                                        <th class="p-3 font-bold">No</th>
+                                        <th class="p-3 font-bold">Waktu Dibuat</th>
+                                        <th class="p-3 font-bold">Tereksekusi</th>
+                                        <th class="p-3 font-bold">Aset</th>
+                                        <th class="p-3 font-bold">Tipe</th>
+                                        <th class="p-3 font-bold">Entry</th>
+                                        <th class="p-3 font-bold">SL</th>
+                                        <th class="p-3 font-bold">TP</th>
+                                        <th class="p-3 font-bold">Resiko Pips</th>
+                                        <th class="p-3 font-bold">Keuntungan Pips</th>
+                                        <th class="p-3 font-bold">RR</th>
+                                        <th class="p-3 font-bold">Notes</th>
+                                        <th class="p-3 font-bold text-center">Status</th>
+                                        <th class="p-3 font-bold text-center">Selesaikan Trade</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableRunning" class="divide-y divide-white text-xs font-medium text-slate-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TABEL HISTORY -->
+                    <div class="p-5 md:p-6">
+                        <div class="flex justify-between items-end mb-4 pb-3 border-b border-slate-100">
+                            <div>
+                                <h3 class="font-bold text-sm text-black flex items-center gap-2 uppercase tracking-widest"><i data-lucide="archive" class="w-4 h-4 text-black"></i> Rencana Signal History (Selesai)</h3>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto overflow-y-auto max-h-[350px] scrollbar-thin scrollbar-thumb-slate-300 rounded-xl border border-slate-200">
+                            <table class="w-full text-left whitespace-nowrap border-collapse bg-gray-50 text-black relative">
+                                <thead class="text-[9px] text-slate-600 uppercase tracking-widest bg-gray-200 border-y border-gray-300 sticky top-0 z-10 shadow-sm">
+                                    <tr>
+                                        <th class="p-3 font-bold">No</th>
+                                        <th class="p-3 font-bold">Waktu Dibuat</th>
+                                        <th class="p-3 font-bold">Tereksekusi</th>
+                                        <th class="p-3 font-bold">Close At</th>
+                                        <th class="p-3 font-bold">Aset</th>
+                                        <th class="p-3 font-bold">Tipe</th>
+                                        <th class="p-3 font-bold">Entry</th>
+                                        <th class="p-3 font-bold">SL</th>
+                                        <th class="p-3 font-bold">TP</th>
+                                        <th class="p-3 font-bold">Resiko Pips</th>
+                                        <th class="p-3 font-bold">Keuntungan Pips</th>
+                                        <th class="p-3 font-bold">RR</th>
+                                        <th class="p-3 font-bold">Notes</th>
+                                        <th class="p-3 font-bold text-center">Status</th>
+                                        <th class="p-3 font-bold text-right">Hasil P/L</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableHistory" class="divide-y divide-white text-xs font-medium text-slate-700">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MESIN STATISTIK (Diambil dari Beranda Analis) -->
+                <div class="clean-card rounded-[1.5rem] overflow-hidden p-5 md:p-6 bg-white shadow-sm border border-slate-200 mt-4">
+                    <h2 class="font-bold text-sm text-black mb-6 border-b border-slate-100 pb-3 flex items-center gap-2 uppercase tracking-widest">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-black"></i> Data Analisis & Kalkulasi Otomatis
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8" id="statsGridArea">
+                        <div id="statNetPipsBox" class="p-4 text-center rounded-[1.25rem] col-span-2 text-white bg-slate-800">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-gray-200">Akumulasi Pips Akhir</div>
+                            <div class="text-base font-bold font-mono" id="statNetPips">0</div>
+                        </div>
+                        <div class="p-4 text-center rounded-[1.25rem] bg-slate-700 text-white">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-gray-200">Sedang Running</div>
+                            <div class="text-xs md:text-sm font-bold mt-1" id="statRunningNowDetail">0 Signal</div>
+                        </div>
+                        <div class="p-4 text-center rounded-[1.25rem] bg-emerald-600 text-white">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-emerald-100">Signal Profit (Win)</div>
+                            <div class="text-xs md:text-sm font-bold mt-1" id="statDetailedWin">0 dari 0</div>
+                        </div>
+                        <div class="p-4 text-center rounded-[1.25rem] bg-rose-600 text-white">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-rose-100">Signal Loss</div>
+                            <div class="text-xs md:text-sm font-bold mt-1" id="statDetailedLoss">0 dari 0</div>
+                        </div>
+                        <div class="p-4 text-center rounded-[1.25rem] bg-slate-600 text-white">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-gray-200">Signal Expired</div>
+                            <div class="text-xs md:text-sm font-bold mt-1" id="statDetailedExpired">0</div>
+                        </div>
+
+                        <!-- Lanjutan Stats -->
+                        <div class="p-4 rounded-[1.25rem] col-span-1 lg:col-span-2 bg-emerald-600 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-emerald-100">Gross Profit (1 Lot)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statGrossProfit">$0</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] col-span-1 lg:col-span-2 bg-rose-600 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-rose-100">Gross Loss (1 Lot)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statGrossLoss">-$0</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] bg-slate-700 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-gray-200">Avg Signal / Bulan</div>
+                            <div class="text-xs md:text-sm font-bold" id="statAvgSignalMonth">0</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] bg-slate-700 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-gray-200">Avg Signal / Minggu</div>
+                            <div class="text-xs md:text-sm font-bold" id="statAvgSignalWeek">0</div>
+                        </div>
+
+                        <div class="p-4 rounded-[1.25rem] bg-emerald-600 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-emerald-100">Avg TP Pips</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statAvgTP">0</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] bg-rose-600 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-rose-100">Avg SL Pips</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statAvgSL">0</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] col-span-1 lg:col-span-2 bg-emerald-600 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-emerald-100">Max TP (Profit Tertinggi)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statMaxTP">0</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] col-span-1 lg:col-span-2 bg-rose-600 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-rose-100">Max SL (Loss Terbesar)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statMaxSL">0</div>
+                        </div>
+
+                        <!-- Avg Holding Period & Max Holding Period -->
+                        <div class="bg-orange-500 border border-orange-600 p-4 col-span-1 md:col-span-3 lg:col-span-3 text-white text-center rounded-[1.25rem] shadow-sm">
+                            <div class="text-[9px] text-orange-100 font-bold uppercase tracking-wider mb-1">Avg. Holding Period (Running)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono text-white" id="statAvgHolding">0 Hari, 0 Jam, 0 Menit</div>
+                        </div>
+                        <div class="bg-orange-500 border border-orange-600 p-4 col-span-1 md:col-span-3 lg:col-span-3 text-white text-center rounded-[1.25rem] shadow-sm">
+                            <div class="text-[9px] text-orange-100 font-bold uppercase tracking-wider mb-1">Max Holding Period (Running Terlama)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono text-white" id="statMaxHolding">0 Hari, 0 Jam, 0 Menit</div>
+                        </div>
+
+                        <!-- Total Eksekusi & Rata-rata RR -->
+                        <div class="p-4 rounded-[1.25rem] col-span-1 md:col-span-3 lg:col-span-3 bg-blue-600 text-white text-center shadow-sm">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-blue-100">Total Trade Selesai (Hit TP/SL)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statTotalCompleted">0 Eksekusi</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] col-span-1 md:col-span-3 lg:col-span-3 bg-blue-700 text-white text-center shadow-sm">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-blue-100">Rata-Rata Risk : Reward (RR)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statAvgRR">1 : 0.00</div>
+                        </div>
+
+                        <div class="p-4 rounded-[1.25rem] col-span-1 md:col-span-3 lg:col-span-3 bg-emerald-600 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-emerald-100">Consecutive Profit (Max)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statConsWin">0</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] col-span-1 md:col-span-3 lg:col-span-3 bg-rose-600 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-rose-100">Consecutive Loss (Max)</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statConsLoss">0</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] col-span-1 md:col-span-3 lg:col-span-3 bg-emerald-700 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-emerald-100">Rasio Profit / Total Eksekusi</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statWinRate">0%</div>
+                        </div>
+                        <div class="p-4 rounded-[1.25rem] col-span-1 md:col-span-3 lg:col-span-3 bg-rose-700 text-white text-center">
+                            <div class="text-[9px] font-bold uppercase tracking-wider mb-1 text-rose-100">Rasio Loss / Total Eksekusi</div>
+                            <div class="text-xs md:text-sm font-bold font-mono" id="statLossRate">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- TABEL PROFIT TAHUNAN & BULANAN DITENGAH -->
+                    <div class="mb-8 border-t border-slate-100 pt-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="calendar-days" class="w-4 h-4 text-black"></i>
+                            <h4 class="text-sm font-bold text-black uppercase tracking-widest">Akumulasi Profit & Loss Bulanan</h4>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mb-4 font-medium">Klik pada Tahun atau Bulan untuk melihat detail data eksekusi dan grafik.</p>
+                        
+                        <!-- Blok Rata-Rata Profit Bulanan & Evaluasi Manajemen Resiko -->
+                        <div class="flex flex-col mb-6 border border-slate-300 shadow-sm bg-white rounded-[1.5rem] overflow-hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 border-b border-slate-300">
+                                <div class="bg-slate-50 p-4 flex flex-col justify-center text-slate-800 border-b md:border-b-0 md:border-r border-slate-300">
+                                    <span class="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1">Rata-Rata Profit Bulanan (Historis)</span>
+                                    <span class="text-base font-mono font-bold text-black" id="req8-avg">0 Pips</span>
+                                </div>
+                                <div class="bg-slate-50 p-4 flex flex-col justify-center text-slate-800">
+                                    <span class="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1">Result Pips Akumulasi Bulan Ini</span>
+                                    <span class="text-base font-mono font-bold text-black" id="req8-cur">0 Pips</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Blok Evaluasi Performa 0-120% -->
+                            <div class="p-5 flex flex-col justify-center">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-3">Persentase Performa & Toleransi Resiko Bulan Ini (Skala 0% - 120%)</span>
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="text-xs font-bold text-slate-800" id="req8-status-text">Menunggu Data...</span>
+                                    <span class="text-[11px] font-mono font-bold text-slate-800" id="req8-pct-val">0%</span>
+                                </div>
+                                <div class="relative w-full bg-slate-200 h-3 rounded-full overflow-hidden mb-1">
+                                    <div id="req8-progress-bar" class="h-full bg-slate-800 transition-all duration-500 relative z-20" style="width: 0%;"></div>
+                                    <!-- Marker 100% -->
+                                    <div class="absolute top-0 bottom-0 left-[83.33%] border-l border-dashed border-slate-500 z-10" title="Titik 100% Rata-rata"></div>
+                                </div>
+                                <div class="flex justify-between text-[8px] font-mono text-slate-500 font-bold px-1 uppercase tracking-wider">
+                                    <span>0%</span>
+                                    <span class="ml-auto mr-[16.66%] pr-1 text-slate-800">100% (Avg)</span>
+                                    <span>120% (Max)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Struktur Tabel Accordion Tahunan & Bulanan -->
+                        <div class="overflow-x-auto border border-slate-300 rounded-[1.5rem] shadow-sm overflow-hidden">
+                            <table class="w-full text-left text-xs whitespace-nowrap bg-white text-slate-800">
+                                <thead class="bg-slate-200 border-b border-slate-300 text-[9px] uppercase font-bold tracking-widest text-black">
+                                    <tr>
+                                        <th class="p-3 w-1/4">Periode & Tahun</th>
+                                        <th class="p-3 w-1/4 text-center">Total Signal</th>
+                                        <th class="p-3 w-1/4 text-center">Win / Loss</th>
+                                        <th class="p-3 w-1/4 text-right">Net P/L (Pips)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monthlyAccordionBody" class="divide-y divide-slate-200 font-mono text-xs font-medium">
+                                    <tr><td colspan="4" class="p-4 text-center text-slate-500 italic font-sans text-xs">Belum ada rekap bulanan.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ▼▼▼ TABEL DATA MULTI-PERIODE ▼▼▼ -->
+                    <div class="mb-8 border-t border-slate-100 pt-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="table-2" class="w-5 h-5 text-black"></i>
+                            <h4 class="text-base font-semibold text-black uppercase tracking-widest">Rekapitulasi Data Performa (Multiperiode)</h4>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mb-4 font-medium">Tabel laporan mendalam performa trading berdasarkan berbagai rentang waktu eksekusi.</p>
+                        
+                        <!-- Tabs Menu -->
+                        <div class="flex gap-2 overflow-x-auto border-b border-slate-200 mb-4 pb-2 scrollbar-thin">
+                            <button onclick="switchPeriodTab('harian')" id="tab-btn-harian" class="px-5 py-2.5 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-xl border border-black whitespace-nowrap transition-colors shadow-sm">Harian</button>
+                            <button onclick="switchPeriodTab('mingguan')" id="tab-btn-mingguan" class="px-5 py-2.5 bg-white text-slate-500 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl border border-slate-200 hover:border-black whitespace-nowrap transition-colors shadow-sm">Mingguan</button>
+                            <button onclick="switchPeriodTab('bulanan')" id="tab-btn-bulanan" class="px-5 py-2.5 bg-white text-slate-500 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl border border-slate-200 hover:border-black whitespace-nowrap transition-colors shadow-sm">Bulanan</button>
+                            <button onclick="switchPeriodTab('3bulan')" id="tab-btn-3bulan" class="px-5 py-2.5 bg-white text-slate-500 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl border border-slate-200 hover:border-black whitespace-nowrap transition-colors shadow-sm">3 Bulan (Kuartal)</button>
+                            <button onclick="switchPeriodTab('tahunan')" id="tab-btn-tahunan" class="px-5 py-2.5 bg-white text-slate-500 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl border border-slate-200 hover:border-black whitespace-nowrap transition-colors shadow-sm">Tahunan</button>
+                        </div>
+
+                        <!-- Table Data -->
+                        <div class="overflow-x-auto overflow-y-auto max-h-[400px] border border-slate-300 rounded-[1.5rem] overflow-hidden shadow-sm scrollbar-thin scrollbar-thumb-slate-300">
+                            <table class="w-full text-center text-xs whitespace-nowrap bg-white text-slate-800">
+                                <thead class="bg-slate-200 border-b border-slate-300 text-[10px] uppercase font-bold tracking-wider text-black sticky top-0 z-10 shadow-sm">
+                                    <tr>
+                                        <th class="p-3 border-r border-slate-300">No</th>
+                                        <th class="p-3 border-r border-slate-300">Keterangan Waktu</th>
+                                        <th class="p-3 border-r border-slate-300">Presentase Akumulasi</th>
+                                        <th class="p-3 border-r border-slate-300">Total Eksekusi</th>
+                                        <th class="p-3 border-r border-slate-300">TP / SL</th>
+                                        <th class="p-3 border-r border-slate-300">Total Eksekusi Bersih</th>
+                                        <th class="p-3 border-r border-slate-300">TP Bersih ($)</th>
+                                        <th class="p-3 border-r border-slate-300">Akumulasi Nett ($)</th>
+                                        <th class="p-3">Total Saldo ($)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="multiPeriodTableBody" class="divide-y divide-slate-200 font-mono text-xs sm:text-sm font-medium">
+                                    <!-- Data di-generate via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ▼▼▼ TABEL PERKEMBANGAN BULANAN (HORIZONTAL LENGKAP) ▼▼▼ -->
+                    <div class="mb-8 border-t border-slate-100 pt-6 overflow-hidden">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="table" class="w-5 h-5 text-black"></i>
+                            <h4 class="text-base font-semibold text-black uppercase tracking-widest">Tabel Perkembangan Bulanan (Terperinci)</h4>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mb-4 font-medium">Laporan metrik performa bulanan yang mencakup Net Profit, Drawdown Bulanan, dan Max Drawdown dalam format Pips, Presentase (%), serta Balance/Saldo.</p>
+                        
+                        <!-- FIX SCROLL HP: Memisahkan div border dengan div scroll agar mulus digeser di HP -->
+                        <div class="w-full border border-slate-300 shadow-sm rounded-[1.5rem] overflow-hidden">
+                            <div class="w-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-300 bg-white">
+                                <table class="monthly-table text-slate-800 w-full text-xs bg-white">
+                                    <thead class="text-[10px] uppercase bg-slate-200 font-bold text-black border-b border-slate-300" id="horizontal-monthly-thead"></thead>
+                                    <tbody id="horizontal-monthly-tbody" class="font-mono text-sm font-medium divide-y divide-slate-200"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ▼▼▼ GRAFIK PERTUMBUHAN PIPS & KALENDER ▼▼▼ -->
+                    <div class="mb-8 border-t border-slate-100 pt-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="line-chart" class="w-5 h-5 text-black"></i>
+                            <h4 class="text-base font-semibold text-black uppercase tracking-widest">Pertumbuhan Pips & Kalender</h4>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mb-4 font-medium">Pantau akumulasi pips harian dan jadwal eksekusi trading bulanan Anda. Data diperbarui sesuai dengan bulan kalender yang dipilih.</p>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <!-- Bagian Chart Growth (Kiri - 2 Kolom) -->
+                            <div class="lg:col-span-2 bg-white border border-slate-300 shadow-sm p-4 sm:p-5 flex flex-col rounded-[1.5rem]">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h5 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">Grafik Pertumbuhan Harian (Pips)</h5>
+                                    <span id="growthBadge" class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-2 py-1 font-bold border border-emerald-200 rounded-md">+0 Pips Bulan Ini</span>
+                                </div>
+                                <!-- PERBAIKAN HTML 1: Tinggi grafik dibuat jauh lebih besar dan sangat responsif (HP, Tablet, Desktop) -->
+                                <div class="relative w-full h-[350px] sm:h-[450px] lg:h-[550px] bg-slate-50/50 border border-slate-200 p-2 sm:p-4 rounded-[1.5rem] flex flex-col justify-end">
+                                    <div class="w-full h-full relative">
+                                        <canvas id="growthPctChart" style="display: block; width: 100%; height: 100%;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bagian Kalender (Kanan - 1 Kolom) -->
+                            <div class="lg:col-span-1 bg-white border border-slate-300 shadow-sm p-4 flex flex-col rounded-[1.5rem] overflow-hidden">
+                                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                                    <button onclick="prevCalendarMonth()" class="p-1 border border-transparent hover:border-slate-300 hover:bg-slate-50 transition-colors rounded-xl"><i data-lucide="chevron-left" class="w-4 h-4 text-black"></i></button>
+                                    <h5 class="text-xs font-bold text-black uppercase tracking-widest" id="calendarMonthYear">Bulan Tahun</h5>
+                                    <button onclick="nextCalendarMonth()" class="p-1 border border-transparent hover:border-slate-300 hover:bg-slate-50 transition-colors rounded-xl"><i data-lucide="chevron-right" class="w-4 h-4 text-black"></i></button>
+                                </div>
+                                <!-- Header Hari -->
+                                <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Min</div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Sen</div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Sel</div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Rab</div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Kam</div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Jum</div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase">Sab</div>
+                                </div>
+                                <!-- Grid Tanggal (di-generate via JS) -->
+                                <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-mono" id="calendarDaysGrid"></div>
+                                <div class="mt-auto pt-4 border-t border-slate-100 space-y-2">
+                                    <div class="flex items-center justify-between text-[9px] text-slate-500 font-medium">
+                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-emerald-500 block rounded-full"></span> Hari Profit</div>
+                                        <span id="calProfitDays" class="font-mono text-emerald-600 font-bold">+0 Hari</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[9px] text-slate-500 font-medium">
+                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-rose-500 block rounded-full"></span> Hari Loss</div>
+                                        <span id="calLossDays" class="font-mono text-rose-600 font-bold">-0 Hari</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Frekuensi Aset -->
+                    <div class="border-t border-slate-100 pt-6 mt-6">
+                        <h3 class="text-base text-black uppercase tracking-widest font-semibold flex items-center gap-2 mb-2"><i data-lucide="pie-chart" class="w-4 h-4 text-black"></i> Frekuensi Aset & Profit Tertinggi</h3>
+                        <p class="text-[11px] text-slate-500 mb-4 font-medium">Diagram lingkaran bobot persentase dari distribusi akumulasi profit (pips) tertinggi hingga terendah.</p>
+                        <div class="relative h-[300px] sm:h-[350px] w-full bg-slate-50/50 rounded-[1.5rem] p-4 border border-slate-200 shadow-sm flex justify-center">
+                            <canvas id="assetPieChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- GRAFIK PERTUMBUHAN PIPS -->
+                    <div class="border-t border-slate-100 pt-6 mt-6">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+                            <div>
+                                <h3 class="text-base sm:text-lg text-black uppercase tracking-widest font-semibold flex items-center gap-2"><i data-lucide="trending-up" class="w-5 h-5 text-black"></i> Grafik Pertumbuhan All Time (Pips)</h3>
+                                <p class="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium">Garis vertikal putus-putus menunjukkan batas pergantian Quarter (Q1, Q2, Q3, Q4).</p>
+                            </div>
+                            <div class="text-xs font-mono text-black md:text-right bg-slate-100 p-3 border border-slate-300 rounded-[1rem] shadow-sm font-medium">
+                                Middle Profit: <span id="chartMidProfit" class="text-blue-600 font-bold">0</span> Pips <br class="md:hidden">
+                                <span class="hidden md:inline"> | </span> Profit Tertinggi: <span id="chartMaxProfit" class="text-emerald-600 font-bold">0</span> Pips
+                            </div>
+                        </div>
+                        <!-- PERBAIKAN HTML 2: Tinggi grafik diubah menjadi raksasa dan menyesuaikan rasio layar device -->
+                        <div class="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] bg-slate-50/50 rounded-[1.5rem] p-3 sm:p-5 border border-slate-200 flex flex-col justify-end">
+                            <div class="w-full h-full relative">
+                                <canvas id="equityChart" style="display: block; width: 100%; height: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ▼▼▼ FOOTER PROFESIONAL & DESKRIPTIF LEODRA ▼▼▼ -->
+        <footer class="bg-[#0b1120] text-slate-400 mt-auto w-full border-t border-slate-800 relative z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-10 mb-10">
+                    <div class="col-span-1 sm:col-span-2 md:col-span-6 lg:col-span-5 text-center sm:text-left">
+                        <span class="font-light text-xl md:text-2xl tracking-widest text-white font-merriweather block mb-3 md:mb-4">LEODRA</span>
+                        <p class="text-xs leading-relaxed text-justify sm:text-left">
+                            Platform manajemen risiko dan analitik trading profesional. <br class="hidden lg:block mb-2">
+                            <strong class="text-slate-200">Keunggulan Eksklusif:</strong> Integrasi otomatis Backtest berbasis Excel (TF), presisi kustomisasi Take Profit/Risk Ratio dinamis, serta analitik probabilitas performa mendalam.
+                        </p>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-4 lg:col-span-5 flex flex-col items-center sm:items-start md:pl-8 lg:pl-16 w-full">
+                        <h4 class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-4 border-b border-slate-800 pb-2 w-full max-w-[200px] text-center sm:text-left">Menu Navigasi</h4>
+                        <div class="grid grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3 text-[11px] font-bold tracking-wider uppercase text-slate-400 w-full max-w-[280px]">
+                            <a href="index.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Home</a>
+                            <a href="login.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Login</a>
+                            <a href="beranda.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Beranda</a>
+                            <a href="berandatrader.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Beranda Trader</a>
+                            <a href="berandaanalis.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Beranda Analis</a>
+                            <a href="edukasisystem.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Education for System</a>
+                            
+                            <a href="topanalisdantrader.html" class="text-white flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-white"></i> <span class="border-b border-white pb-0.5">Top Analis Dan Trader</span></a>
+                            
+                            <a href="investasi.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Investasi</a>
+                            <a href="backtest.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Backtest</a>
+                            <a href="langganan.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Langganan</a>
+                            <a href="pengaturan.html" class="hover:text-white transition-colors flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-500"></i> Pengaturan</a>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 lg:col-span-2 flex flex-col items-center sm:items-start md:items-end w-full">
+                        <h4 class="text-[10px] font-bold tracking-widest uppercase text-slate-400 mb-3 md:mb-4 border-b border-slate-800 pb-2 w-full max-w-[150px] md:max-w-[120px] text-center sm:text-left md:text-right">Terhubung</h4>
+                        <div class="flex flex-row md:flex-col items-center sm:items-start md:items-end gap-4 md:gap-3">
+                            <a href="#" class="flex items-center gap-2 hover:text-white transition-colors group">
+                                <span class="text-[11px] font-bold tracking-wider uppercase hidden md:block">Instagram</span>
+                                <i data-lucide="instagram" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110"></i>
+                            </a>
+                            <a href="#" class="flex items-center gap-2 hover:text-white transition-colors group">
+                                <span class="text-[11px] font-bold tracking-wider uppercase hidden md:block">Support</span>
+                                <i data-lucide="mail" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-6 flex flex-col lg:flex-row justify-between items-center gap-4 md:gap-6 text-[10px] text-slate-500 text-center lg:text-left">
+                    <div class="max-w-4xl leading-relaxed">
+                        <strong class="text-slate-400">Peringatan Risiko:</strong> Trading pada instrumen keuangan membawa tingkat risiko tinggi. LEODRA adalah platform analitik dan penyedia layanan copytrade mandiri, bukan manajer investasi.
+                    </div>
+                    
+                    <div class="flex flex-col items-center lg:items-end gap-2 flex-shrink-0">
+                        <p>&copy; 2026 LEODRA Analytics. Hak Cipta Dilindungi.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL KONFIRMASI AKSI -->
+    <div id="actionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="bg-white border border-slate-200 p-6 rounded-[1.5rem] shadow-2xl max-w-sm w-full transform scale-95 transition-transform" id="actionModalContent">
+            <h3 class="text-base font-bold text-black mb-2 uppercase tracking-wide" id="modalTitle">Konfirmasi</h3>
+            <p class="text-slate-600 font-medium text-xs mb-6" id="modalDesc">Apakah Anda yakin?</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-black rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors">Batal</button>
+                <button id="modalConfirmBtn" class="px-4 py-2 bg-black hover:bg-slate-800 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider transition-colors shadow-sm">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ▼▼▼ LOGIKA JAVASCRIPT & CHART ▼▼▼ -->
+    <script>
+        // Helper untuk mencegah error null reference
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).replace(/\./g, ':');
+            const dateStr = now.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+            
+            safeSetText("headerRealTimeClock", timeStr);
+            safeSetText("headerRealTimeDate", dateStr);
+        }
+        
+        window.updateHeaderTime = updateDateTime;
+
+        function loadUserData() {
+            const userStr = localStorage.getItem("user");
+            const mobileAvatar = document.getElementById('mobile-user-avatar');
+            const desktopAvatar = document.getElementById('desktop-user-avatar');
+            const desktopUser = document.getElementById('desktop-user-info');
+            const mobileUserName = document.getElementById('mobile-user-name');
+            const mobileUserEmail = document.getElementById('mobile-user-email');
+            const mobileTime = document.getElementById('mobile-user-time');
+            
+            if(userStr) {
+                try {
+                    const u = JSON.parse(userStr); 
+                    const name = u.name || u.email || "User"; 
+                    const email = u.email || "";
+                    let regTime = u.timestamp || "Aktif";
+                    
+                    // Set Desktop Info (Nama dengan font eksklusif Merriweather)
+                    if(desktopUser) desktopUser.innerHTML = name;
+                    
+                    // Set Mobile Info (Nama & Email dengan font eksklusif Merriweather)
+                    if(mobileUserName) mobileUserName.textContent = name;
+                    if(mobileUserEmail) mobileUserEmail.textContent = email;
+                    if(mobileTime) mobileTime.textContent = regTime;
+                    
+                    // Setel Foto Profil Lingkaran (Prioritas dari Google: u.picture)
+                    const avatarUrl = u.picture || u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0f172a&color=fff&bold=true`;
+                    if(mobileAvatar) mobileAvatar.src = avatarUrl;
+                    if(desktopAvatar) desktopAvatar.src = avatarUrl;
+                    
+                } catch(e){}
+            } else {
+                if(desktopUser) { desktopUser.textContent = "Mode Tamu"; desktopUser.className = "text-sm font-light tracking-wide text-gray-900 leading-tight font-merriweather"; }
+                if(mobileUserName) mobileUserName.textContent = "Guest";
+                if(mobileUserEmail) mobileUserEmail.textContent = "Belum login";
+                if(mobileAvatar) mobileAvatar.src = `https://ui-avatars.com/api/?name=Guest&background=0f172a&color=fff&bold=true`;
+                if(desktopAvatar) desktopAvatar.src = `https://ui-avatars.com/api/?name=Guest&background=0f172a&color=fff&bold=true`;
+            }
+        }
+
+        window.logout = function() {
+            if(confirm("Keluar dari sesi ini?")) { 
+                localStorage.removeItem("user"); 
+                localStorage.removeItem("token"); 
+                window.location.href='login.html'; 
+            }
+        }
+
+        window.toggleMenu = function() {
+            const m = document.getElementById('mobile-menu');
+            const iconMenu = document.getElementById('icon-menu');
+            const iconClose = document.getElementById('icon-close');
+            
+            if(m) { 
+                m.classList.toggle('translate-x-full'); 
+                const isOpen = !m.classList.contains('translate-x-full');
+                
+                // Atur agar body tidak bisa di-scroll saat menu terbuka
+                document.body.style.overflow = isOpen ? 'hidden' : 'auto'; 
+                
+                // Logika Animasi Tombol Hamburger to Cross
+                if(isOpen) {
+                    if(iconMenu) { iconMenu.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconMenu.classList.add('scale-0', 'rotate-90', 'opacity-0'); }
+                    if(iconClose) { iconClose.classList.remove('scale-0', '-rotate-90', 'opacity-0'); iconClose.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                } else {
+                    if(iconClose) { iconClose.classList.remove('scale-100', 'rotate-0', 'opacity-100'); iconClose.classList.add('scale-0', '-rotate-90', 'opacity-0'); }
+                    if(iconMenu) { iconMenu.classList.remove('scale-0', 'rotate-90', 'opacity-0'); iconMenu.classList.add('scale-100', 'rotate-0', 'opacity-100'); }
+                }
+            }
+        }
+
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('desktop-sidebar');
+            const wrapper = document.getElementById('main-wrapper');
+            if(sidebar) {
+                sidebar.classList.toggle('is-collapsed');
+                if (sidebar.classList.contains('is-collapsed')) {
+                    if (wrapper) {
+                        wrapper.classList.remove('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.add('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                } else {
+                    if (wrapper) {
+                        wrapper.classList.add('md:ml-64', 'md:w-[calc(100%-16rem)]'); 
+                        wrapper.classList.remove('md:ml-[5.5rem]', 'md:w-[calc(100%-5.5rem)]');
+                    }
+                }
+                setTimeout(() => { 
+                    if (equityChartInstance) equityChartInstance.resize(); 
+                    if (assetPieChartInstance) assetPieChartInstance.resize();
+                    if (growthPctChartInstance) growthPctChartInstance.resize();
+                }, 300);
+            }
+        }
+
+        // Fungsi Kembali Dinamis (Cerdas)
+        window.goBackDynamic = function() {
+            // Mengecek apakah ada halaman sebelumnya di riwayat browser tab ini
+            if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+                window.history.back(); // Kembali ke halaman sebelumnya (Beranda, Lainnya, dll)
+            } else {
+                // Fallback: Jika dibuka langsung dari link/tab baru, kembali ke Top Analis
+                window.location.href = 'topanalisdantrader.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) window.lucide.createIcons();
+            
+            updateDateTime(); 
+            setInterval(updateDateTime, 1000);
+            loadUserData();
+            renderAll(); 
+        });
+
+        // Data Dummy agar halaman Portofolio Analis terlihat berisi
+        let signals = [
+            { id: 's1', asset: 'XAUUSD', type: 'BUY', entry: 2150.40, sl: 2145.00, tp: 2165.00, expiration: new Date(new Date().getTime() + 86400000).toISOString(), notes: 'Rejection Support', status: 'PROFIT', createdAt: new Date(new Date().getTime() - 172800000).toISOString(), executedAt: new Date(new Date().getTime() - 170000000).toISOString(), closedAt: new Date(new Date().getTime() - 86400000).toISOString(), pips: 146 },
+            { id: 's2', asset: 'EURUSD', type: 'SELL', entry: 1.0945, sl: 1.0985, tp: 1.0850, expiration: new Date(new Date().getTime() + 86400000).toISOString(), notes: 'Breakout Trendline', status: 'PROFIT', createdAt: new Date(new Date().getTime() - 345600000).toISOString(), executedAt: new Date(new Date().getTime() - 340000000).toISOString(), closedAt: new Date(new Date().getTime() - 172800000).toISOString(), pips: 95 },
+            { id: 's3', asset: 'GBPUSD', type: 'BUY', entry: 1.2650, sl: 1.2600, tp: 1.2750, expiration: new Date(new Date().getTime() + 86400000).toISOString(), notes: 'News Impact', status: 'LOSS', createdAt: new Date(new Date().getTime() - 518400000).toISOString(), executedAt: new Date(new Date().getTime() - 510000000).toISOString(), closedAt: new Date(new Date().getTime() - 345600000).toISOString(), pips: -50 },
+            { id: 's4', asset: 'US30', type: 'BUY', entry: 39000, sl: 38800, tp: 39500, expiration: new Date(new Date().getTime() + 86400000).toISOString(), notes: 'Macro Data', status: 'RUNNING', createdAt: new Date().toISOString(), executedAt: new Date().toISOString(), closedAt: null, pips: 0 },
+            { id: 's5', asset: 'USDJPY', type: 'SELL', entry: 150.50, sl: 151.00, tp: 149.00, expiration: new Date(new Date().getTime() + 86400000).toISOString(), notes: 'BOJ Intervention', status: 'PENDING', createdAt: new Date().toISOString(), executedAt: null, closedAt: null, pips: 0 }
+        ];
+        
+        let equityChartInstance = null;
+        let assetPieChartInstance = null;
+        let growthPctChartInstance = null;
+        let monthlyChartInstances = {}; 
+        let currentCalendarDate = new Date(); // Menyimpan state bulan kalender yang sedang aktif
+        
+        const PIP_MULTIPLIER_STANDARD = 10000;
+        const PIP_MULTIPLIER_JPY = 100;
+        const getPipMultiplier = (asset) => asset.toUpperCase().includes('JPY') ? PIP_MULTIPLIER_JPY : PIP_MULTIPLIER_STANDARD;
+        
+        const formatDate = (isoString) => {
+            if(!isoString || isoString === 'Awal') return 'Awal';
+            const d = new Date(isoString);
+            return d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+        };
+        const formatDateShort = (isoString) => {
+            if(!isoString || isoString === 'Awal') return 'Awal';
+            const d = new Date(isoString);
+            return d.toLocaleDateString('id-ID', {day:'2-digit', month:'short'});
+        };
+        const getFullMonthYear = (isoString) => {
+            const d = new Date(isoString);
+            return d.toLocaleDateString('id-ID', {month:'long', year:'numeric'});
+        };
+
+        const calculatePips = (asset, entry, target, isRisk = true, type) => {
+            const multi = getPipMultiplier(asset);
+            let diff = 0;
+            if(type === 'BUY') diff = isRisk ? (entry - target) : (target - entry);
+            if(type === 'SELL') diff = isRisk ? (target - entry) : (entry - target);
+            return diff * multi;
+        };
+
+        const calculateRR = (riskPips, rewardPips) => {
+            if (riskPips === 0) return '1 : 0';
+            const ratio = rewardPips / riskPips;
+            return `1 : ${ratio % 1 === 0 ? ratio : ratio.toFixed(2)}`;
+        };
+
+        const formatDuration = (ms) => {
+            if (isNaN(ms) || ms <= 0) return '0 Hari, 0 Jam, 0 Menit';
+            const days = Math.floor(ms / (24*60*60*1000));
+            const daysms = ms % (24*60*60*1000);
+            const hours = Math.floor(daysms / (60*60*1000));
+            const hoursms = ms % (60*60*1000);
+            const minutes = Math.floor(hoursms / (60*1000));
+            return `${days} Hari, ${hours} Jam, ${minutes} Menit`;
+        };
+
+        let actionConfig = { id: null, type: null, result: null };
+
+        window.triggerAction = function(id, action, result = null) {
+            actionConfig = { id, type: action, result };
+            const modal = document.getElementById('actionModal');
+            if(modal) {
+                safeSetText('modalTitle', action === 'DELETE' ? 'Hapus Jurnal' : (action === 'EXECUTE' ? 'Eksekusi Rencana' : 'Selesaikan Trade'));
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+                setTimeout(() => { modal.classList.remove('opacity-0'); }, 10);
+            }
+        }
+
+        window.closeModal = function() {
+            const modal = document.getElementById('actionModal');
+            if(modal) {
+                modal.classList.add('opacity-0');
+                setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+            }
+        }
+
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        if (modalConfirmBtn) {
+            modalConfirmBtn.addEventListener('click', () => {
+                const index = signals.findIndex(s => s.id === actionConfig.id);
+                if (index > -1) {
+                    const sig = signals[index];
+                    const now = new Date().toISOString();
+
+                    if (actionConfig.type === 'DELETE') signals.splice(index, 1);
+                    else if (actionConfig.type === 'CANCEL') { sig.status = 'CANCELLED'; sig.closedAt = now; }
+                    else if (actionConfig.type === 'EXECUTE') { sig.status = 'RUNNING'; sig.executedAt = now; }
+                    else if (actionConfig.type === 'CLOSE') {
+                        sig.status = actionConfig.result; sig.closedAt = now;
+                        const multi = getPipMultiplier(sig.asset);
+                        if (actionConfig.result === 'PROFIT') sig.pips = sig.type === 'BUY' ? (sig.tp - sig.entry) * multi : (sig.entry - sig.tp) * multi;
+                        else { sig.pips = sig.type === 'BUY' ? (sig.sl - sig.entry) * multi : (sig.entry - sig.sl) * multi; sig.pips = -Math.abs(sig.pips); }
+                    }
+                    renderAll();
+                }
+                closeModal();
+            });
+        }
+
+        function renderAll() {
+            renderPending();
+            renderRunning();
+            renderHistory();
+            calculateAndRenderStats();
+            if(window.lucide) window.lucide.createIcons();
+        }
+
+        function renderPending() {
+            const pending = signals.filter(s => s.status === 'PENDING').reverse();
+            const tbody = document.getElementById('tablePending');
+            if(!tbody) return;
+            
+            let html = ''; const nowTime = new Date().getTime();
+
+            pending.forEach((s, index) => {
+                const expTimeMs = new Date(s.expiration).getTime();
+                if(expTimeMs < nowTime) { s.status = 'EXPIRED'; s.closedAt = new Date().toISOString(); return; }
+                const diffHoursLeft = Math.max(0, Math.round((expTimeMs - nowTime) / (1000 * 60 * 60)));
+                
+                let risk = Math.abs(calculatePips(s.asset, s.entry, s.sl, true, s.type));
+                let reward = Math.abs(calculatePips(s.asset, s.entry, s.tp, false, s.type));
+
+                html += `
+                    <tr class="hover:bg-slate-100 transition-colors">
+                        <td class="p-3 font-mono">${index + 1}</td>
+                        <td class="p-3">${formatDate(s.createdAt)}</td>
+                        <td class="p-3 font-bold">${s.asset}</td>
+                        <td class="p-3 font-bold ${s.type === 'BUY' ? 'text-emerald-600' : 'text-rose-600'}">${s.type}</td>
+                        <td class="p-3 font-mono">${s.entry}</td>
+                        <td class="p-3 font-mono text-rose-600">${s.sl}</td>
+                        <td class="p-3 font-mono text-emerald-600">${s.tp}</td>
+                        <td class="p-3 font-mono text-rose-600">-${risk.toFixed(1)}</td>
+                        <td class="p-3 font-mono text-emerald-600">+${reward.toFixed(1)}</td>
+                        <td class="p-3 font-mono">${calculateRR(risk, reward)}</td>
+                        <td class="p-3 font-mono">${diffHoursLeft} Jam</td>
+                        <td class="p-3 truncate max-w-[120px]" title="${s.notes}">${s.notes || '-'}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-1 border border-slate-300 bg-white text-[8px] font-bold tracking-widest uppercase text-slate-600 rounded-md">${s.status}</span></td>
+                        <td class="p-3 text-center space-x-1 whitespace-nowrap">
+                            <button onclick="triggerAction('${s.id}', 'EXECUTE')" class="px-2 py-1 bg-white border border-slate-300 hover:border-black font-bold text-[9px] uppercase tracking-wider transition rounded-md">Run</button>
+                            <button onclick="triggerAction('${s.id}', 'CANCEL')" class="px-2 py-1 bg-white border border-slate-300 hover:border-black font-bold text-[9px] uppercase tracking-wider transition rounded-md">Batal</button>
+                            <button onclick="triggerAction('${s.id}', 'DELETE')" class="px-2 py-1 bg-rose-50 border border-rose-200 text-rose-600 hover:border-rose-400 font-bold text-[9px] uppercase tracking-wider transition rounded-md">Hapus</button>
+                        </td>
+                    </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="14" class="p-4 text-center text-slate-400 italic">Kosong</td></tr>';
+        }
+
+        function renderRunning() {
+            const running = signals.filter(s => s.status === 'RUNNING').reverse();
+            const tbody = document.getElementById('tableRunning');
+            if(!tbody) return;
+            
+            let html = '';
+            running.forEach((s, index) => {
+                let risk = Math.abs(calculatePips(s.asset, s.entry, s.sl, true, s.type));
+                let reward = Math.abs(calculatePips(s.asset, s.entry, s.tp, false, s.type));
+                
+                html += `
+                    <tr class="hover:bg-slate-100 transition-colors">
+                        <td class="p-3 font-mono">${index + 1}</td>
+                        <td class="p-3">${formatDate(s.createdAt)}</td>
+                        <td class="p-3">${formatDate(s.executedAt)}</td>
+                        <td class="p-3 font-bold">${s.asset}</td>
+                        <td class="p-3 font-bold ${s.type === 'BUY' ? 'text-emerald-600' : 'text-rose-600'}">${s.type}</td>
+                        <td class="p-3 font-mono">${s.entry}</td>
+                        <td class="p-3 font-mono text-rose-600">${s.sl}</td>
+                        <td class="p-3 font-mono text-emerald-600">${s.tp}</td>
+                        <td class="p-3 font-mono text-rose-600">-${risk.toFixed(1)}</td>
+                        <td class="p-3 font-mono text-emerald-600">+${reward.toFixed(1)}</td>
+                        <td class="p-3 font-mono">${calculateRR(risk, reward)}</td>
+                        <td class="p-3 truncate max-w-[120px]" title="${s.notes}">${s.notes || '-'}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-1 border border-slate-300 bg-white text-[8px] font-bold tracking-widest uppercase text-blue-600 rounded-md">${s.status}</span></td>
+                        <td class="p-3 text-center space-x-1.5 whitespace-nowrap">
+                            <button onclick="triggerAction('${s.id}', 'CLOSE', 'PROFIT')" class="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[9px] uppercase tracking-wider hover:bg-emerald-100 transition rounded-md">Hit TP</button>
+                            <button onclick="triggerAction('${s.id}', 'CLOSE', 'LOSS')" class="px-2.5 py-1 bg-rose-50 border border-rose-200 text-rose-700 font-bold text-[9px] uppercase tracking-wider hover:bg-rose-100 transition rounded-md">Hit SL</button>
+                        </td>
+                    </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="14" class="p-4 text-center text-slate-400 italic">Kosong</td></tr>';
+        }
+
+        function renderHistory() {
+            const history = signals.filter(s => ['PROFIT', 'LOSS', 'CANCELLED', 'EXPIRED'].includes(s.status)).reverse();
+            const tbody = document.getElementById('tableHistory');
+            if(!tbody) return;
+            
+            let html = '';
+            history.forEach((s, index) => {
+                let risk = Math.abs(calculatePips(s.asset, s.entry, s.sl, true, s.type));
+                let reward = Math.abs(calculatePips(s.asset, s.entry, s.tp, false, s.type));
+                let pipsText = s.status === 'PROFIT' ? `+${s.pips.toFixed(1)}` : (s.status === 'LOSS' ? `${s.pips.toFixed(1)}` : '-');
+                
+                html += `
+                    <tr class="hover:bg-slate-100 transition-colors">
+                        <td class="p-3 font-mono">${index + 1}</td>
+                        <td class="p-3">${formatDate(s.createdAt)}</td>
+                        <td class="p-3">${s.executedAt ? formatDate(s.executedAt) : '-'}</td>
+                        <td class="p-3">${formatDate(s.closedAt)}</td>
+                        <td class="p-3 font-bold">${s.asset}</td>
+                        <td class="p-3 font-bold ${s.type === 'BUY' ? 'text-emerald-600' : 'text-rose-600'}">${s.type}</td>
+                        <td class="p-3 font-mono">${s.entry}</td>
+                        <td class="p-3 font-mono text-rose-600">${s.sl}</td>
+                        <td class="p-3 font-mono text-emerald-600">${s.tp}</td>
+                        <td class="p-3 font-mono text-rose-600">-${risk.toFixed(1)}</td>
+                        <td class="p-3 font-mono text-emerald-600">+${reward.toFixed(1)}</td>
+                        <td class="p-3 font-mono">${calculateRR(risk, reward)}</td>
+                        <td class="p-3 truncate max-w-[120px]" title="${s.notes}">${s.notes || '-'}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-1 border border-slate-200 bg-white text-[8px] font-bold tracking-widest uppercase text-slate-600 rounded-md">${s.status}</span></td>
+                        <td class="p-3 text-right font-mono font-bold ${s.pips > 0 ? 'text-emerald-600' : (s.pips < 0 ? 'text-rose-600' : 'text-black')}">${pipsText}</td>
+                    </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="15" class="p-4 text-center text-slate-400 italic">Kosong</td></tr>';
+        }
+
+        window.toggleYear = function(yearId) {
+            const rows = document.querySelectorAll('.year-child-' + yearId);
+            rows.forEach(row => { row.classList.toggle('hidden'); });
+        }
+
+        window.toggleMonthDetails = function(cleanId) {
+            const row = document.getElementById('details-' + cleanId);
+            if(row) {
+                row.classList.toggle('open');
+                
+                // FIX/PATCH: Memaksa Chart.js merender ulang dimensinya saat Accordion dibuka 
+                // Mencegah bug grafik menjadi 0px atau gepeng akibat di-render saat elemen disembunyikan (display: none)
+                if (row.classList.contains('open') && monthlyChartInstances[cleanId]) {
+                    monthlyChartInstances[cleanId].resize();
+                }
+            }
+        }
+
+        function calculateAndRenderStats() {
+            const history = signals.filter(s => ['PROFIT', 'LOSS'].includes(s.status)); 
+            const chronological = [...history].sort((a,b) => new Date(a.closedAt) - new Date(b.closedAt));
+            
+            let totalPips = 0; let winCount = 0; let lossCount = 0;
+            let winningPipsSum = 0; let losingPipsSum = 0;
+            let maxTP = 0; let maxSL = 0;
+            let maxConsWin = 0; let currentConsWin = 0;
+            let maxConsLoss = 0; let currentConsLoss = 0;
+            let totalRRValue = 0; 
+            
+            let cumulativePips = [{ date: 'Awal', dateShort: 'Awal', pips: 0, isQuarterBoundary: false, quarterLabel: '' }]; 
+            let currentTotal = 0; let lastQuarter = null; let lastYear = null;
+            
+            let yearlyDataRaw = {}; 
+            let monthlyDataRaw = {}; 
+            let assetDataMap = {}; 
+
+            // Struktur Tabel Bulanan Horizontal 
+            let horizontalMonthlyData = {}; 
+            let globalPeak = 0; let currentGlobalEquity = 0;
+            let monthPeak = 0; let currentMonthEquity = 0; let currentMonthKey = '';
+
+            chronological.forEach(s => {
+                totalPips += s.pips; currentTotal += s.pips;
+                const dateObj = new Date(s.closedAt);
+                const q = Math.floor(dateObj.getMonth() / 3) + 1; 
+                const year = dateObj.getFullYear();
+                
+                let isBoundary = false;
+                if (lastQuarter !== null && (q !== lastQuarter || year !== lastYear)) isBoundary = true;
+                lastQuarter = q; lastYear = year;
+
+                cumulativePips.push({ 
+                    date: formatDate(s.closedAt), 
+                    dateShort: formatDateShort(s.closedAt), 
+                    pips: currentTotal,
+                    isQuarterBoundary: isBoundary,
+                    quarterLabel: isBoundary ? `Q${q} ${year}` : ''
+                });
+
+                const yearKey = year.toString();
+                const mKey = getFullMonthYear(s.closedAt);
+                
+                if(!yearlyDataRaw[yearKey]) yearlyDataRaw[yearKey] = { signals: [], totalPips: 0, win: 0, loss: 0, months: {} };
+                if(!yearlyDataRaw[yearKey].months[mKey]) yearlyDataRaw[yearKey].months[mKey] = { signals: [], totalPips: 0, win: 0, loss: 0, cumulativeList: [{ date: 'Awal', dateShort: 'Awal', pips: 0 }], runPips: 0 };
+                if(!monthlyDataRaw[mKey]) monthlyDataRaw[mKey] = { totalPips: 0 };
+                
+                yearlyDataRaw[yearKey].signals.push(s); yearlyDataRaw[yearKey].totalPips += s.pips;
+                yearlyDataRaw[yearKey].months[mKey].signals.push(s);
+                yearlyDataRaw[yearKey].months[mKey].totalPips += s.pips;
+                yearlyDataRaw[yearKey].months[mKey].runPips += s.pips;
+                yearlyDataRaw[yearKey].months[mKey].cumulativeList.push({ date: formatDate(s.closedAt), dateShort: formatDateShort(s.closedAt), pips: yearlyDataRaw[yearKey].months[mKey].runPips });
+                monthlyDataRaw[mKey].totalPips += s.pips;
+
+                // Logika DD All Time dan DD Bulanan untuk Tabel Horizontal
+                if (currentMonthKey !== mKey) {
+                    currentMonthKey = mKey;
+                    monthPeak = 0;
+                    currentMonthEquity = 0;
+                }
+                currentGlobalEquity += s.pips;
+                if (currentGlobalEquity > globalPeak) globalPeak = currentGlobalEquity;
+                let ddGlobal = globalPeak - currentGlobalEquity;
+
+                currentMonthEquity += s.pips;
+                if (currentMonthEquity > monthPeak) monthPeak = currentMonthEquity;
+                let ddMonth = monthPeak - currentMonthEquity;
+
+                if (!horizontalMonthlyData[mKey]) {
+                    horizontalMonthlyData[mKey] = { 
+                        pips:0, count:0, win:0, loss:0, 
+                        ddMonthMax:0, ddGlobalMax:0 
+                    };
+                }
+
+                let hmd = horizontalMonthlyData[mKey];
+                hmd.pips += s.pips;
+                hmd.count++;
+                if (s.status === 'PROFIT') hmd.win++; else hmd.loss++;
+                if (ddMonth > hmd.ddMonthMax) hmd.ddMonthMax = ddMonth;
+                if (ddGlobal > hmd.ddGlobalMax) hmd.ddGlobalMax = ddGlobal;
+
+                let riskPips = Math.abs(calculatePips(s.asset, s.entry, s.sl, true, s.type));
+                let rewardPips = Math.abs(calculatePips(s.asset, s.entry, s.tp, false, s.type));
+                if(riskPips > 0) totalRRValue += (rewardPips / riskPips);
+
+                if (s.status === 'PROFIT') {
+                    winCount++; winningPipsSum += s.pips; 
+                    yearlyDataRaw[yearKey].win++; yearlyDataRaw[yearKey].months[mKey].win++;
+                    if (s.pips > maxTP) maxTP = s.pips;
+                    currentConsWin++; currentConsLoss = 0;
+                    if(currentConsWin > maxConsWin) maxConsWin = currentConsWin;
+                } else {
+                    lossCount++; losingPipsSum += s.pips; 
+                    yearlyDataRaw[yearKey].loss++; yearlyDataRaw[yearKey].months[mKey].loss++;
+                    if (s.pips < maxSL) maxSL = s.pips;
+                    currentConsLoss++; currentConsWin = 0;
+                    if(currentConsLoss > maxConsLoss) maxConsLoss = currentConsLoss;
+                }
+
+                if(!assetDataMap[s.asset]) assetDataMap[s.asset] = 0;
+                assetDataMap[s.asset] += s.pips;
+            });
+
+            // --- TAMBAHAN LOGIKA UNTUK 6 KOTAK STATISTIK (ISSUE 1) ---
+            const runningCount = signals.filter(s => s.status === 'RUNNING').length;
+            const expiredCount = signals.filter(s => s.status === 'EXPIRED').length;
+            
+            // Asumsi 1 Lot Standar = $10 per pip (untuk representasi nilai Gross)
+            const grossProfitLot = winningPipsSum * 10; 
+            const grossLossLot = losingPipsSum * 10;
+            
+            const uniqueMonths = new Set();
+            const uniqueWeeks = new Set();
+            history.forEach(s => {
+                const d = new Date(s.closedAt);
+                uniqueMonths.add(`${d.getFullYear()}-${d.getMonth()}`);
+                
+                // Kalkulasi identifikasi Minggu (Minggu ke berapa dalam setahun)
+                const startOfYear = new Date(d.getFullYear(), 0, 1);
+                const pastDaysOfYear = (d - startOfYear) / 86400000;
+                const weekNum = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+                uniqueWeeks.add(`${d.getFullYear()}-W${weekNum}`);
+            });
+            
+            const totalExec = history.length;
+            const avgSigMonth = uniqueMonths.size > 0 ? (totalExec / uniqueMonths.size).toFixed(1) : 0;
+            const avgSigWeek = uniqueWeeks.size > 0 ? (totalExec / uniqueWeeks.size).toFixed(1) : 0;
+
+            safeSetText('statRunningNowDetail', `${runningCount} Signal`);
+            safeSetText('statDetailedExpired', `${expiredCount} Signal`);
+            safeSetText('statGrossProfit', `+$${grossProfitLot.toFixed(2)}`);
+            safeSetText('statGrossLoss', `-$${Math.abs(grossLossLot).toFixed(2)}`);
+            safeSetText('statAvgSignalMonth', `${avgSigMonth} Signal`);
+            safeSetText('statAvgSignalWeek', `${avgSigWeek} Signal`);
+            // ---------------------------------------------------------
+
+            const elNetPipsBox = document.getElementById('statNetPipsBox');
+            if(elNetPipsBox) {
+                if(totalPips > 0) elNetPipsBox.className = "p-4 rounded-[1.25rem] col-span-2 text-white bg-emerald-600 text-center";
+                else if(totalPips < 0) elNetPipsBox.className = "p-4 rounded-[1.25rem] col-span-2 text-white bg-rose-600 text-center";
+                else elNetPipsBox.className = "p-4 rounded-[1.25rem] col-span-2 text-white bg-slate-800 text-center";
+            }
+            
+            safeSetText('statNetPips', totalPips > 0 ? `+${totalPips.toFixed(1)}` : totalPips.toFixed(1));
+            safeSetText('statDetailedWin', `${winCount} dari ${winCount+lossCount}`);
+            safeSetText('statDetailedLoss', `${lossCount} dari ${winCount+lossCount}`);
+            
+            const totalMonths = Object.keys(monthlyDataRaw).length || 1;
+            const avgMonthlyPips = totalMonths > 0 && totalPips !== 0 ? (totalPips / totalMonths) : 0;
+            
+            safeSetText('statAvgTP', winCount > 0 ? `+${(winningPipsSum/winCount).toFixed(1)}` : '0');
+            safeSetText('statAvgSL', lossCount > 0 ? `${(losingPipsSum/lossCount).toFixed(1)}` : '0');
+            safeSetText('statMaxTP', `+${maxTP.toFixed(1)}`);
+            safeSetText('statMaxSL', `${maxSL.toFixed(1)}`);
+            safeSetText('statConsWin', `${maxConsWin} Beruntun`);
+            safeSetText('statConsLoss', `${maxConsLoss} Beruntun`);
+
+            const totalExecuted = winCount + lossCount;
+            const winRate = totalExecuted > 0 ? ((winCount / totalExecuted) * 100).toFixed(1) : 0;
+            const lossRate = totalExecuted > 0 ? ((lossCount / totalExecuted) * 100).toFixed(1) : 0;
+            
+            const avgRR = totalExecuted > 0 ? (totalRRValue / totalExecuted) : 0;
+            safeSetText('statTotalCompleted', `${totalExecuted} Eksekusi`);
+            safeSetText('statAvgRR', `1 : ${avgRR.toFixed(2)}`);
+            safeSetText('statWinRate', `${winRate}% (${winCount}/${totalExecuted})`);
+            safeSetText('statLossRate', `${lossRate}% (${lossCount}/${totalExecuted})`);
+
+            // Holding period mock calculation for completed trades
+            let totalHoldTime = 0; let maxHoldTime = 0;
+            chronological.forEach(s => {
+                if(s.executedAt && s.closedAt) {
+                    const diff = new Date(s.closedAt) - new Date(s.executedAt);
+                    totalHoldTime += diff;
+                    if(diff > maxHoldTime) maxHoldTime = diff;
+                }
+            });
+            const avgHoldTime = totalExecuted > 0 ? totalHoldTime / totalExecuted : 0;
+            safeSetText('statAvgHolding', formatDuration(avgHoldTime));
+            safeSetText('statMaxHolding', formatDuration(maxHoldTime));
+
+            const curMonthKey = getFullMonthYear(new Date().toISOString());
+            const curMonthData = monthlyDataRaw[curMonthKey] ? monthlyDataRaw[curMonthKey].totalPips : 0;
+            
+            safeSetText('req8-avg', avgMonthlyPips.toFixed(1) + ' Pips');
+            safeSetText('req8-cur', curMonthData.toFixed(1) + ' Pips');
+            
+            const target = Math.abs(avgMonthlyPips);
+            let percentage = 0;
+            if (target > 0) percentage = (curMonthData / target) * 100;
+            
+            const absPercentage = Math.abs(percentage);
+            const cappedPercentage = absPercentage > 120 ? 120 : absPercentage;
+            const progressWidth = (cappedPercentage / 120) * 100; 
+            const isProfit = curMonthData >= 0;
+
+            const elProgressBar = document.getElementById('req8-progress-bar');
+            if (elProgressBar) {
+                elProgressBar.style.width = `${progressWidth}%`;
+
+                if (target === 0) {
+                    safeSetText('req8-status-text', "Belum Ada Acuan Historis");
+                    safeSetText('req8-pct-val', "0%");
+                    safeSetText('req8-pct-desc', "Perlu data eksekusi bulan sebelumnya untuk menetapkan rata-rata.");
+                    elProgressBar.className = "h-full bg-slate-400 transition-all duration-500 relative z-20";
+                } else if (isProfit) {
+                    safeSetText('req8-status-text', "Profit / Surplus (+)");
+                    safeSetText('req8-pct-val', `${percentage.toFixed(1)}%`);
+                    safeSetText('req8-pct-desc', `Analis telah mencapai profit ${percentage.toFixed(1)}% dari rata-rata profit historis bulanan.`);
+                    elProgressBar.className = "h-full bg-emerald-500 transition-all duration-500 relative z-20";
+                } else {
+                    safeSetText('req8-status-text', "Loss / Drawdown (-)");
+                    safeSetText('req8-pct-val', `-${absPercentage.toFixed(1)}%`);
+                    safeSetText('req8-pct-desc', `Analis mengalami kerugian sebesar ${absPercentage.toFixed(1)}% dari batas toleransi rata-rata historis.`);
+                    elProgressBar.className = "h-full bg-rose-500 transition-all duration-500 relative z-20";
+                }
+            }
+
+            const tBodyMonthly = document.getElementById('monthlyAccordionBody');
+            if (tBodyMonthly) {
+                tBodyMonthly.innerHTML = '';
+                
+                if(Object.keys(yearlyDataRaw).length === 0) {
+                    tBodyMonthly.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500 italic text-[11px]">Belum ada rekap data trading.</td></tr>';
+                } else {
+                    const sortedYears = Object.keys(yearlyDataRaw).sort((a,b) => b - a);
+                    sortedYears.forEach(year => {
+                        const yData = yearlyDataRaw[year];
+                        tBodyMonthly.innerHTML += `
+                            <tr class="bg-slate-100 hover:bg-slate-200 cursor-pointer border-b border-slate-300 transition-colors" onclick="toggleYear('${year}')">
+                                <td class="p-3 font-bold text-slate-800 flex items-center gap-2">
+                                    <i data-lucide="folder" class="w-4 h-4 text-slate-600"></i> Tahun ${year} <span class="text-[9px] font-normal text-blue-600 ml-1 hidden md:inline hover:underline uppercase tracking-wider">(Detail)</span>
+                                </td>
+                                <td class="p-3 text-center text-slate-800 font-bold">${yData.signals.length} Sinyal</td>
+                                <td class="p-3 text-center"><span class="text-emerald-600 font-bold">${yData.win} W</span> / <span class="text-rose-600 font-bold">${yData.loss} L</span></td>
+                                <td class="p-3 text-right font-bold ${yData.totalPips >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${yData.totalPips > 0 ? '+' : ''}${yData.totalPips.toFixed(1)}</td>
+                            </tr>
+                        `;
+
+                        const sortedMonths = Object.keys(yData.months).reverse(); 
+                        sortedMonths.forEach(month => {
+                            const data = yData.months[month];
+                            const cleanId = month.replace(/\s+/g, '');
+                            const assetList = [...new Set(data.signals.map(s => s.asset))].join(', ');
+
+                            tBodyMonthly.innerHTML += `
+                                <tr class="year-child-${year} hidden hover:bg-slate-50 cursor-pointer border-b border-slate-200 transition-colors bg-white" onclick="toggleMonthDetails('${cleanId}')">
+                                    <td class="p-3 pl-8 font-bold text-slate-700 flex items-center gap-2"><i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i> ${month}</td>
+                                    <td class="p-3 text-center text-slate-600 font-medium">${data.signals.length} Sinyal</td>
+                                    <td class="p-3 text-center"><span class="text-emerald-500 font-bold">${data.win} W</span> / <span class="text-rose-500 font-bold">${data.loss} L</span></td>
+                                    <td class="p-3 text-right font-bold ${data.totalPips >= 0 ? 'text-emerald-500' : 'text-rose-500'}">${data.totalPips > 0 ? '+' : ''}${data.totalPips.toFixed(1)}</td>
+                                </tr>
+                                <tr id="details-${cleanId}" class="month-details-row hidden bg-slate-50 border-b border-slate-300">
+                                    <td colspan="4" class="p-4 pl-8">
+                                        <div class="text-[10px] text-black mb-2 flex justify-between bg-white p-2 border border-slate-200 shadow-sm uppercase tracking-wider rounded-[1rem]">
+                                            <span><strong>Aset Dimainkan:</strong> ${assetList}</span>
+                                            <span><strong>Akumulasi Pips:</strong> ${data.totalPips.toFixed(1)}</span>
+                                        </div>
+                                        <div class="relative h-[150px] w-full bg-white border border-slate-200 p-2 shadow-sm rounded-[1rem] mt-2">
+                                            <canvas id="chart-${cleanId}"></canvas>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    });
+
+                    setTimeout(() => {
+                        sortedYears.forEach(year => {
+                            Object.entries(yearlyDataRaw[year].months).forEach(([month, data]) => {
+                                const cleanId = month.replace(/\s+/g, '');
+                                const ctx = document.getElementById(`chart-${cleanId}`);
+                                if(!ctx) return;
+                                
+                                if(monthlyChartInstances[cleanId]) monthlyChartInstances[cleanId].destroy();
+                                
+                                const dataLength = data.cumulativeList.length;
+                                const totalDuration = 1000;
+                                const delayPoints = totalDuration / Math.max(1, dataLength);
+                                const prevY = (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(0) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
+
+                                monthlyChartInstances[cleanId] = new Chart(ctx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: data.cumulativeList.map(d=>d.dateShort),
+                                        datasets: [{
+                                            data: data.cumulativeList.map(d=>d.pips),
+                                            borderColor: '#000000', borderWidth: 1.5, 
+                                            pointRadius: 3, pointBackgroundColor: '#000',
+                                            fill: false, tension: 0.1
+                                        }]
+                                    },
+                                    options: { 
+                                        animation: {
+                                            x: {
+                                                type: 'number', easing: 'linear', duration: delayPoints, from: NaN,
+                                                delay(ctx) { if (ctx.type !== 'data' || ctx.xStarted) return 0; ctx.xStarted = true; return ctx.index * delayPoints; }
+                                            },
+                                            y: {
+                                                type: 'number', easing: 'linear', duration: delayPoints, from: prevY,
+                                                delay(ctx) { if (ctx.type !== 'data' || ctx.yStarted) return 0; ctx.yStarted = true; return ctx.index * delayPoints; }
+                                            }
+                                        },
+                                        responsive: true, maintainAspectRatio: false, 
+                                        plugins: { legend: { display: false } }, 
+                                        scales: { 
+                                            x: { display: true, grid: { display: true, color: '#000000', lineWidth: 0.5 }, ticks: { color: '#000000', font: { size: 9, family: 'monospace' } } },
+                                            y: { display: true, grid: { display: false } }
+                                        } 
+                                    }
+                                });
+                            });
+                        });
+                    }, 100);
+                }
+            }
+
+            updateEquityChart(cumulativePips);
+            updateAssetPieChart(assetDataMap);
+            renderGrowthChartAndCalendar();
+            renderHorizontalMonthlyTable(horizontalMonthlyData, 10000, 1);
+
+            if(typeof switchPeriodTab === 'function') switchPeriodTab('harian');
+            if(window.lucide) window.lucide.createIcons(); 
+        }
+
+        function renderHorizontalMonthlyTable(data, baseCapital, lotMultiplier) {
+            const theadEl = document.getElementById('horizontal-monthly-thead');
+            const tbodyEl = document.getElementById('horizontal-monthly-tbody');
+            if(!theadEl || !tbodyEl) return;
+            const months = Object.keys(data);
+            
+            if(months.length === 0) {
+                 theadEl.innerHTML = '';
+                 tbodyEl.innerHTML = '<tr><td class="p-6 text-center text-slate-500 italic font-sans text-xs border-none" colspan="15">Data eksekusi trade masih kosong. Silakan selesaikan (Hit TP/SL) minimal 1 trade untuk melihat data.</td></tr>';
+                 return;
+            }
+
+            const fPips = (v) => v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1);
+            const fDollar = (v) => v > 0 ? `+$${v.toFixed(2)}` : (v < 0 ? `-$${Math.abs(v).toFixed(2)}` : `$0.00`);
+            const fPct = (v) => v > 0 ? `+${v.toFixed(2)}%` : `${v.toFixed(2)}%`;
+            
+            // Header: Memberikan garis vertikal (border-r) yang sama untuk Metrik dan Bulan
+            let thead = `<tr><th class="bg-slate-200 text-left border-r border-slate-300 p-3">METRIK / INDIKATOR</th>`;
+            months.forEach(m => { thead += `<th class="bg-slate-200 border-r border-slate-300 p-3">${m}</th>`; });
+            thead += `<th class="bg-slate-300 text-black p-3">TOTAL (ALL TIME)</th></tr>`;
+            theadEl.innerHTML = thead;
+
+            let html = "";
+            let tPips = 0, tCount = 0, tWin = 0, tLoss = 0;
+            let currentBalance = baseCapital;
+
+            months.forEach(m => {
+                tPips += data[m].pips; tCount += data[m].count; 
+                tWin += data[m].win; tLoss += data[m].loss;
+            });
+
+            // 1. Net Profit (Pips)
+            html += `<tr class="bg-white"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Net Profit (Pips)</td>`;
+            months.forEach(m => { const v = data[m].pips; html += `<td class="${v >= 0 ? 'text-emerald-600' : 'text-rose-600'} font-bold border-r border-slate-300">${fPips(v)}</td>`; });
+            html += `<td class="font-black bg-slate-100 ${tPips >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${fPips(tPips)}</td></tr>`;
+
+            // 2. Net Profit (%)
+            html += `<tr class="bg-slate-50/50"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Net Profit (%)</td>`;
+            months.forEach(m => { 
+                const d = data[m].pips * lotMultiplier; const p = (d / baseCapital) * 100;
+                html += `<td class="${p >= 0 ? 'text-emerald-600' : 'text-rose-600'} font-bold border-r border-slate-300">${fPct(p)}</td>`; 
+            });
+            const tPct = ((tPips * lotMultiplier) / baseCapital) * 100;
+            html += `<td class="font-black bg-slate-100 ${tPct >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${fPct(tPct)}</td></tr>`;
+
+            // 3. Net Profit ($)
+            html += `<tr class="bg-white border-b-2 border-slate-200"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Net Profit ($ / USD)</td>`;
+            months.forEach(m => { 
+                const d = data[m].pips * lotMultiplier;
+                html += `<td class="${d >= 0 ? 'text-emerald-600' : 'text-rose-600'} font-bold border-r border-slate-300">${fDollar(d)}</td>`; 
+            });
+            const tDollar = tPips * lotMultiplier;
+            html += `<td class="font-black bg-slate-100 ${tDollar >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${fDollar(tDollar)}</td></tr>`;
+
+            // 4. Drawdown Bulanan (Pips)
+            html += `<tr class="bg-rose-50/20"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Drawdown Bulanan (Pips)</td>`;
+            months.forEach(m => { html += `<td class="text-rose-600 font-bold border-r border-slate-300">-${data[m].ddMonthMax.toFixed(1)}</td>`; });
+            html += `<td class="font-bold bg-slate-100 text-slate-400 font-sans text-[10px]">Per Bulan</td></tr>`;
+
+            // 5. Drawdown Bulanan (%)
+            html += `<tr class="bg-rose-50/40"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Drawdown Bulanan (%)</td>`;
+            months.forEach(m => { 
+                const dp = ((data[m].ddMonthMax * lotMultiplier) / baseCapital) * 100;
+                html += `<td class="text-rose-600 font-bold border-r border-slate-300">-${dp.toFixed(2)}%</td>`; 
+            });
+            html += `<td class="font-bold bg-slate-100 text-slate-400 font-sans text-[10px]">Per Bulan</td></tr>`;
+
+            // 6. Drawdown Bulanan ($)
+            html += `<tr class="bg-rose-50/60 border-b-2 border-slate-200"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Drawdown Bulanan ($ / USD)</td>`;
+            months.forEach(m => { 
+                const dd = data[m].ddMonthMax * lotMultiplier;
+                html += `<td class="text-rose-600 font-bold border-r border-slate-300">-$${dd.toFixed(2)}</td>`; 
+            });
+            html += `<td class="font-bold bg-slate-100 text-slate-400 font-sans text-[10px]">Per Bulan</td></tr>`;
+
+            // 7. Max Drawdown All Time (Pips)
+            html += `<tr class="bg-white"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Max Drawdown All Time (Pips)</td>`;
+            let lastMaxDD = 0;
+            months.forEach(m => { 
+                if (data[m].ddGlobalMax > lastMaxDD) lastMaxDD = data[m].ddGlobalMax;
+                html += `<td class="text-rose-700 font-bold border-r border-slate-300">-${data[m].ddGlobalMax.toFixed(1)}</td>`; 
+            });
+            html += `<td class="font-black bg-slate-100 text-rose-700">-${lastMaxDD.toFixed(1)}</td></tr>`;
+
+            // 8. Max Drawdown All Time (%)
+            html += `<tr class="bg-slate-50/50"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Max Drawdown All Time (%)</td>`;
+            let lastMaxDDPct = 0;
+            months.forEach(m => { 
+                const dp = ((data[m].ddGlobalMax * lotMultiplier) / baseCapital) * 100;
+                if (dp > lastMaxDDPct) lastMaxDDPct = dp;
+                html += `<td class="text-rose-700 font-bold border-r border-slate-300">-${dp.toFixed(2)}%</td>`; 
+            });
+            html += `<td class="font-black bg-slate-100 text-rose-700">-${lastMaxDDPct.toFixed(2)}%</td></tr>`;
+
+            // 9. Max Drawdown All Time ($)
+            html += `<tr class="bg-white border-b-2 border-slate-200"><td class="font-bold text-slate-800 text-left border-r border-slate-300">Max Drawdown All Time ($ / USD)</td>`;
+            let lastMaxDDDollar = 0;
+            months.forEach(m => { 
+                const dd = data[m].ddGlobalMax * lotMultiplier;
+                if (dd > lastMaxDDDollar) lastMaxDDDollar = dd;
+                html += `<td class="text-rose-700 font-bold border-r border-slate-300">-$${dd.toFixed(2)}</td>`; 
+            });
+            html += `<td class="font-black bg-slate-100 text-rose-700">-$${lastMaxDDDollar.toFixed(2)}</td></tr>`;
+
+            // 10. Total Trade
+            html += `<tr><td class="font-bold text-slate-700 text-left border-r border-slate-300">Total Trade (Eksekusi)</td>`;
+            months.forEach(m => { html += `<td class="font-bold border-r border-slate-300">${data[m].count}</td>`; });
+            html += `<td class="font-black bg-slate-100">${tCount}</td></tr>`;
+
+            // 11. Win / Loss
+            html += `<tr><td class="font-bold text-slate-700 text-left border-r border-slate-300">Trade Win / Loss</td>`;
+            months.forEach(m => { html += `<td class="font-bold border-r border-slate-300"><span class="text-emerald-600">${data[m].win}</span> / <span class="text-rose-600">${data[m].loss}</span></td>`; });
+            html += `<td class="font-bold bg-slate-100"><span class="text-emerald-600">${tWin}</span> / <span class="text-rose-600">${tLoss}</span></td></tr>`;
+
+            // 12. Saldo Akhir (Balance)
+            html += `<tr class="bg-blue-50/30 border-t-2 border-slate-300"><td class="font-bold text-slate-900 text-left border-r border-slate-300">Total Saldo (Balance Akhir)</td>`;
+            let runningBalance = baseCapital;
+            months.forEach(m => { 
+                runningBalance += (data[m].pips * lotMultiplier);
+                html += `<td class="font-black text-blue-800 border-r border-slate-300">$${runningBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>`; 
+            });
+            html += `<td class="font-black bg-blue-100 text-blue-900">$${runningBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`;
+
+            tbodyEl.innerHTML = html;
+        }
+
+        function updateEquityChart(data) {
+            const canvas = document.getElementById('equityChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const labels = data.length > 0 ? data.map(d => d.dateShort || d.date) : ['Awal'];
+            const values = data.length > 0 ? data.map(d => d.pips) : [0];
+
+            if(equityChartInstance) equityChartInstance.destroy();
+
+            const maxVal = values.length > 0 ? Math.max(...values) : 0;
+            const minVal = values.length > 0 ? Math.min(...values) : 0;
+            const midVal = (maxVal + minVal) / 2;
+            
+            safeSetText('chartMaxProfit', maxVal.toFixed(1));
+            safeSetText('chartMidProfit', midVal.toFixed(1));
+
+            const totalDuration = 1200;
+            const delayBetweenPoints = totalDuration / Math.max(1, values.length);
+            const previousY = (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(0) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
+
+            const pointColors = values.map(v => v >= 0 ? '#1e3a8a' : '#dc2626');
+
+            // --- PLUGIN CROSSHAIR VERTIKAL ---
+            const crosshairPlugin = {
+                id: 'verticalCrosshair',
+                afterDraw: chart => {
+                    if (chart.tooltip?._active && chart.tooltip._active.length) {
+                        const activePoint = chart.tooltip._active[0];
+                        const ctx = chart.ctx;
+                        const x = activePoint.element.x;
+                        const topY = chart.scales.y.top;
+                        const bottomY = chart.scales.y.bottom;
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(x, topY);
+                        ctx.lineTo(x, bottomY);
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeStyle = 'rgba(100, 116, 139, 0.6)'; // Warna abu-abu elegan
+                        ctx.setLineDash([4, 4]); // Efek putus-putus
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+            };
+
+            equityChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Growth (Pips)', data: values,
+                        borderColor: '#1e3a8a', borderWidth: 2, 
+                        pointBackgroundColor: pointColors, pointBorderColor: pointColors, 
+                        pointRadius: 3, pointHoverRadius: 6,
+                        clip: false, // PERBAIKAN JS: Cegah titik potong di ujung batas canvas
+                        fill: {
+                            target: 'origin',
+                            above: '#1e3a8a', 
+                            below: '#dc2626'  
+                        },
+                        segment: {
+                            borderColor: ctx => ctx.p0.parsed.y < 0 && ctx.p1.parsed.y < 0 ? '#dc2626' : undefined
+                        },
+                        tension: 0.2
+                    }]
+                },
+                options: { 
+                    animation: {
+                        x: {
+                            type: 'number', easing: 'linear', duration: delayBetweenPoints, from: NaN,
+                            delay(ctx) { if (ctx.type !== 'data' || ctx.xStarted) return 0; ctx.xStarted = true; return ctx.index * delayBetweenPoints; }
+                        },
+                        y: {
+                            type: 'number', easing: 'linear', duration: delayBetweenPoints, from: previousY,
+                            delay(ctx) { if (ctx.type !== 'data' || ctx.yStarted) return 0; ctx.yStarted = true; return ctx.index * delayBetweenPoints; }
+                        }
+                    },
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    // PERBAIKAN LOGIKA: Sensitivitas kursor & sentuhan HP diaktifkan penuh
+                    interaction: { mode: 'index', intersect: false },
+                    layout: {
+                        // PERBAIKAN JS: Memberi margin dalam agar tidak menempel pada bingkai luar
+                        padding: { top: 20, right: 30, bottom: 20, left: 15 }
+                    },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            display: true,
+                            offset: true, // PERBAIKAN JS: Memberi jeda spasi di ujung kanan/kiri chart
+                            grid: {
+                                display: true,
+                                color: (ctx) => {
+                                    if (ctx.index !== undefined && data[ctx.index] && data[ctx.index].isQuarterBoundary) return 'rgba(0, 0, 0, 0.4)'; 
+                                    return 'transparent';
+                                },
+                                borderDash: [5, 5], lineWidth: 1.5,
+                            },
+                            ticks: {
+                                color: '#000000', font: { size: 10, family: 'monospace' },
+                                padding: 12, // PERBAIKAN JS: Mencegah teks tanggal terpotong
+                                callback: function(value, index) {
+                                    const defaultLabel = data[index] ? (data[index].dateShort || data[index].date) : '';
+                                    if (data[index] && data[index].quarterLabel) return [defaultLabel, data[index].quarterLabel]; 
+                                    return defaultLabel;
+                                }
+                            }
+                        },
+                        y: { 
+                            display: true, 
+                            grace: '10%', // PERBAIKAN JS: Batas atas & bawah grafik dilonggarkan 10%
+                            grid: { display: true, color: '#e2e8f0' },
+                            ticks: { padding: 12 }
+                        }
+                    }
+                },
+                plugins: [crosshairPlugin] // Suntik plugin crosshair
+            });
+
+            // --- LOGIKA PENGHAPUSAN CROSSHAIR OTOMATIS (DESKTOP & MOBILE) ---
+            const clearEquityInteraction = () => {
+                if (equityChartInstance) {
+                    equityChartInstance.setActiveElements([]); // Hapus memori hover
+                    if (equityChartInstance.tooltip) equityChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
+                    equityChartInstance.update('none'); // 'none' agar grafik diam & tidak berkedip
+                }
+            };
+            canvas.onmouseleave = clearEquityInteraction;
+            canvas.ontouchcancel = clearEquityInteraction;
+            canvas.ontouchend = () => { setTimeout(clearEquityInteraction, 50); };
+        }
+
+        function updateAssetPieChart(assetMap) {
+            const canvas = document.getElementById('assetPieChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const sortedAssets = Object.keys(assetMap).sort((a,b) => assetMap[b] - assetMap[a]);
+            const profitAssets = sortedAssets.filter(a => assetMap[a] > 0);
+            
+            let labels = [];
+            let values = [];
+            let bgColors = [];
+            
+            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#0f172a', '#e11d48'];
+
+            if (profitAssets.length > 0) {
+                const totalProfit = profitAssets.reduce((sum, a) => sum + assetMap[a], 0);
+                profitAssets.forEach((a, i) => {
+                    let pct = ((assetMap[a] / totalProfit) * 100).toFixed(1);
+                    labels.push(`${a} (${pct}%)`);
+                    values.push(assetMap[a]);
+                    bgColors.push(colors[i % colors.length]);
+                });
+            } else {
+                labels = ['Belum Ada Profit'];
+                values = [1];
+                bgColors = ['#cbd5e1'];
+            }
+
+            if(assetPieChartInstance) assetPieChartInstance.destroy();
+            
+            assetPieChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Kontribusi Pips', data: values, backgroundColor: bgColors,
+                        borderWidth: 2, borderColor: '#ffffff', hoverOffset: 6
+                    }]
+                },
+                options: { 
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1200,
+                        easing: 'easeOutQuart'
+                    },
+                    responsive: true, maintainAspectRatio: false, cutout: '55%',
+                    plugins: { 
+                        legend: { 
+                            display: true, position: 'right',
+                            labels: { font: { size: 11, family: 'monospace', weight: 'bold' }, color: '#334155', usePointStyle: true, padding: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if(labels[0] === 'Belum Ada Profit') return ' Tidak ada data';
+                                    let label = context.label || '';
+                                    let value = context.raw || 0;
+                                    return ` ${label.split(' ')[0]}: +${value.toFixed(1)} Pips`;
+                                }
+                            }
+                        }
+                    } 
+                }
+            });
+        }
+
+        // ▼▼▼ LOGIKA GRAFIK PERTUMBUHAN HARIAN & KALENDER (DIPERBARUI) ▼▼▼
+        window.prevCalendarMonth = function() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderGrowthChartAndCalendar();
+        }
+
+        window.nextCalendarMonth = function() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderGrowthChartAndCalendar();
+        }
+
+        function renderGrowthChartAndCalendar() {
+            const y = currentCalendarDate.getFullYear();
+            const m = currentCalendarDate.getMonth(); 
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+            const calMonthYearEl = document.getElementById('calendarMonthYear');
+            if(calMonthYearEl) calMonthYearEl.innerText = `${monthNames[m]} ${y}`;
+
+            // Filter sinyal HANYA untuk bulan & tahun yang dipilih
+            const monthSignals = signals.filter(s => {
+                if(s.status !== 'PROFIT' && s.status !== 'LOSS') return false;
+                const d = new Date(s.closedAt);
+                return d.getFullYear() === y && d.getMonth() === m;
+            });
+
+            // Akumulasikan Pips Harian di Bulan Tersebut
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            const dailyPips = new Array(daysInMonth + 1).fill(0); 
+
+            monthSignals.forEach(s => {
+                const d = new Date(s.closedAt).getDate();
+                dailyPips[d] += s.pips;
+            });
+
+            let cumulativeData = [];
+            let labels = [];
+            let currentSum = 0;
+            let profitDays = [];
+            let lossDays = [];
+
+            for(let i = 1; i <= daysInMonth; i++) {
+                labels.push(`${i} ${monthNames[m].substring(0,3)}`);
+                if(dailyPips[i] !== 0) {
+                    if(dailyPips[i] > 0) profitDays.push(i);
+                    else if(dailyPips[i] < 0) lossDays.push(i);
+                }
+                currentSum += dailyPips[i];
+                cumulativeData.push(currentSum); // Simpan Pips berurutan (Bukan Persentase)
+            }
+
+            // Update Teks Ringkasan (Badge Pips & Keterangan Hari Kalender)
+            const badge = document.getElementById('growthBadge');
+            if(badge) {
+                badge.innerText = currentSum >= 0 ? `+${currentSum.toFixed(1)} Pips Bulan Ini` : `${currentSum.toFixed(1)} Pips Bulan Ini`;
+                badge.className = currentSum >= 0 ?
+                    "text-[10px] font-mono bg-emerald-100 text-emerald-800 px-2 py-1 font-bold border border-emerald-200 rounded-md shadow-sm" :
+                    "text-[10px] font-mono bg-rose-100 text-rose-800 px-2 py-1 font-bold border border-rose-200 rounded-md shadow-sm";
+            }
+            safeSetText('calProfitDays', `+${profitDays.length} Hari`);
+            safeSetText('calLossDays', `-${lossDays.length} Hari`);
+
+            // Render Grid Kalender Secara Dinamis dan Akurat
+            const firstDayIndex = new Date(y, m, 1).getDay(); // 0(Min) - 6(Sab)
+            const grid = document.getElementById('calendarDaysGrid');
+            if(grid) {
+                let html = '';
+                // Spasi kosong untuk hari sebelum awal bulan
+                for(let i = 0; i < firstDayIndex; i++) {
+                    html += `<div></div>`;
+                }
+                
+                const todayObj = new Date();
+                const isCurrentMonth = todayObj.getFullYear() === y && todayObj.getMonth() === m;
+                const todayDate = todayObj.getDate();
+
+                for(let i = 1; i <= daysInMonth; i++) {
+                    let bgClass = "bg-slate-50 hover:bg-slate-200 text-slate-700 border border-transparent";
+                    if(profitDays.includes(i)) bgClass = "bg-emerald-100 text-emerald-700 font-bold border border-emerald-300";
+                    else if (lossDays.includes(i)) bgClass = "bg-rose-100 text-rose-700 font-bold border border-rose-300";
+
+                    if(isCurrentMonth && i === todayDate) bgClass += " ring-2 ring-black shadow-md bg-white text-black font-black"; 
+
+                    html += `<div class="aspect-square flex items-center justify-center p-1 cursor-pointer transition-colors rounded-xl ${bgClass}" title="Tanggal ${i}">${i}</div>`;
+                }
+                grid.innerHTML = html;
+            }
+
+            // Render Grafik Menggunakan Parameter PIPS
+            const ctxGrowth = document.getElementById('growthPctChart');
+            if(ctxGrowth) {
+                if(growthPctChartInstance) growthPctChartInstance.destroy();
+
+                const totalDuration = 800;
+                const delayBetweenPoints = totalDuration / Math.max(1, cumulativeData.length);
+                const previousY = (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(0) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
+
+                const pointColors = cumulativeData.map(v => v >= 0 ? '#1e3a8a' : '#dc2626');
+
+                // --- PLUGIN CROSSHAIR VERTIKAL HARIAN ---
+                const crosshairPluginDaily = {
+                    id: 'verticalCrosshair',
+                    afterDraw: chart => {
+                        if (chart.tooltip?._active && chart.tooltip._active.length) {
+                            const activePoint = chart.tooltip._active[0];
+                            const ctx = chart.ctx;
+                            const x = activePoint.element.x;
+                            const topY = chart.scales.y.top;
+                            const bottomY = chart.scales.y.bottom;
+
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.moveTo(x, topY);
+                            ctx.lineTo(x, bottomY);
+                            ctx.lineWidth = 1.5;
+                            ctx.strokeStyle = 'rgba(100, 116, 139, 0.6)'; 
+                            ctx.setLineDash([4, 4]); 
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                };
+
+                growthPctChartInstance = new Chart(ctxGrowth, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Akumulasi Harian (Pips)',
+                            data: cumulativeData, 
+                            borderColor: '#1e3a8a', 
+                            borderWidth: 2,
+                            pointBackgroundColor: pointColors,
+                            pointBorderColor: pointColors,
+                            pointRadius: 2,
+                            pointHoverRadius: 6,
+                            clip: false, // PERBAIKAN JS: Mencegah grafik terpotong di tepi canvas
+                            fill: {
+                                target: 'origin',
+                                above: '#1e3a8a', 
+                                below: '#dc2626'  
+                            },
+                            segment: {
+                                borderColor: ctx => ctx.p0.parsed.y < 0 && ctx.p1.parsed.y < 0 ? '#dc2626' : undefined
+                            },
+                            tension: 0.2
+                        }]
+                    },
+                    options: {
+                        animation: {
+                            x: {
+                                type: 'number', easing: 'linear', duration: delayBetweenPoints, from: NaN,
+                                delay(ctx) { if (ctx.type !== 'data' || ctx.xStarted) return 0; ctx.xStarted = true; return ctx.index * delayBetweenPoints; }
+                            },
+                            y: {
+                                type: 'number', easing: 'linear', duration: delayBetweenPoints, from: previousY,
+                                delay(ctx) { if (ctx.type !== 'data' || ctx.yStarted) return 0; ctx.yStarted = true; return ctx.index * delayBetweenPoints; }
+                            }
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        // PERBAIKAN LOGIKA: Sensitivitas kursor & sentuhan HP diaktifkan penuh
+                        interaction: { mode: 'index', intersect: false },
+                        layout: {
+                            // PERBAIKAN JS: Memberi margin padding agar chart tidak menabrak bingkai
+                            padding: { top: 20, right: 30, bottom: 10, left: 10 }
+                        },
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: function(context) { return ' ' + context.raw.toFixed(1) + ' Pips'; } } }
+                        },
+                        scales: {
+                            x: { 
+                                offset: true, // PERBAIKAN JS: Memberikan spasi di titik X pertama dan terakhir
+                                grid: { display: false }, 
+                                ticks: { font: { size: 9, family: 'monospace' }, color: '#64748b', maxTicksLimit: 10, padding: 10 } 
+                            },
+                            y: {
+                                grace: '10%', // PERBAIKAN JS: Memberikan jeda ketinggian 10% dari garis Y teratas
+                                grid: { color: '#e2e8f0', borderDash: [5, 5] },
+                                ticks: { callback: function(value){ return value + ' Pips' }, font: { size: 10, family: 'monospace' }, color: '#000', padding: 10 }
+                            }
+                        }
+                    },
+                    plugins: [crosshairPluginDaily] // Suntik plugin crosshair
+                });
+
+                // --- LOGIKA PENGHAPUSAN CROSSHAIR OTOMATIS (DESKTOP & MOBILE) ---
+                const clearGrowthInteraction = () => {
+                    if (growthPctChartInstance) {
+                        growthPctChartInstance.setActiveElements([]); // Hapus memori hover
+                        if (growthPctChartInstance.tooltip) growthPctChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
+                        growthPctChartInstance.update('none'); // 'none' agar grafik diam & tidak berkedip
+                    }
+                };
+                ctxGrowth.onmouseleave = clearGrowthInteraction;
+                ctxGrowth.ontouchcancel = clearGrowthInteraction;
+                ctxGrowth.ontouchend = () => { setTimeout(clearGrowthInteraction, 50); };
+            }
+        }
+
+        window.switchPeriodTab = function(period) {
+            const tabs = ['harian', 'mingguan', 'bulanan', '3bulan', 'tahunan'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-btn-' + t);
+                if(btn) {
+                    btn.className = "px-5 py-2.5 bg-white text-slate-500 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-xl border border-slate-200 hover:border-black whitespace-nowrap transition-colors shadow-sm";
+                }
+            });
+
+            const activeBtn = document.getElementById('tab-btn-' + period);
+            if(activeBtn) {
+                activeBtn.className = "px-5 py-2.5 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-xl border border-black whitespace-nowrap transition-colors shadow-sm";
+            }
+
+            renderMultiPeriodData(period);
+        }
+
+        // --- ROMBAK TOTAL TABEL MULTI-PERIODE UNTUK MEMBACA DATA ASLI (ISSUE 2) ---
+        function renderMultiPeriodData(period) {
+            const tbody = document.getElementById('multiPeriodTableBody');
+            if(!tbody) return;
+
+            let html = '';
+            let rowsData = [];
+            const now = new Date();
+            const baseCapital = 10000;
+            const lotMultiplier = 1; // 1 Pip = $1 (Disesuaikan proporsional dengan modal $10.000)
+
+            // Hanya proses eksekusi yang sudah selesai (PROFIT/LOSS)
+            const executedSignals = signals.filter(s => ['PROFIT', 'LOSS'].includes(s.status));
+
+            // Helper kalkulasi data (Pips, Win/Loss) per rentang waktu kalender
+            const getStats = (startDate, endDate) => {
+                let pips = 0, win = 0, loss = 0;
+                executedSignals.forEach(s => {
+                    const d = new Date(s.closedAt);
+                    if (d >= startDate && d <= endDate) {
+                        pips += s.pips;
+                        if (s.status === 'PROFIT') win++;
+                        else if (s.status === 'LOSS') loss++;
+                    }
+                });
+                return { pips, win, loss, total: win + loss };
+            };
+
+            // Helper kalkulasi total saldo kumulatif sampai akhir rentang waktu tertentu
+            const getSaldoUpTo = (endDate) => {
+                let saldo = baseCapital;
+                executedSignals.forEach(s => {
+                    if (new Date(s.closedAt) <= endDate) {
+                        saldo += s.pips * lotMultiplier;
+                    }
+                });
+                return saldo;
+            };
+
+            // Generate rentang tanggal berdasarkan tab yang dipilih
+            if (period === 'harian') {
+                for(let i=0; i<7; i++) {
+                    const targetDate = new Date();
+                    targetDate.setDate(targetDate.getDate() - i);
+                    const start = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0);
+                    const end = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59);
+                    const label = targetDate.toLocaleDateString('id-ID', {weekday:'long', day:'2-digit', month:'short', year:'numeric'});
+                    rowsData.push({ label, ...getStats(start, end), saldo: getSaldoUpTo(end) });
+                }
+            } else if (period === 'mingguan') {
+                const year = now.getFullYear(); const month = now.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const weeks = [
+                    { label: 'Minggu ke-1 (Tgl 1-7)', start: 1, end: 7 },
+                    { label: 'Minggu ke-2 (Tgl 8-14)', start: 8, end: 14 },
+                    { label: 'Minggu ke-3 (Tgl 15-21)', start: 15, end: 21 },
+                    { label: `Minggu ke-4 (Tgl 22-${daysInMonth})`, start: 22, end: daysInMonth }
+                ];
+                weeks.reverse().forEach(w => {
+                    const start = new Date(year, month, w.start, 0, 0, 0);
+                    const end = new Date(year, month, w.end, 23, 59, 59);
+                    rowsData.push({ label: w.label, ...getStats(start, end), saldo: getSaldoUpTo(end) });
+                });
+            } else if (period === 'bulanan') {
+                for(let i=0; i<6; i++) {
+                    const targetDate = new Date(); targetDate.setMonth(targetDate.getMonth() - i);
+                    const year = targetDate.getFullYear(); const month = targetDate.getMonth();
+                    const lastDay = new Date(year, month + 1, 0).getDate();
+                    const start = new Date(year, month, 1, 0, 0, 0);
+                    const end = new Date(year, month, lastDay, 23, 59, 59);
+                    const label = targetDate.toLocaleDateString('id-ID', {month:'long', year:'numeric'});
+                    rowsData.push({ label, ...getStats(start, end), saldo: getSaldoUpTo(end) });
+                }
+            } else if (period === '3bulan') {
+                for(let i=0; i<4; i++) {
+                    const currentQ = Math.floor(now.getMonth() / 3);
+                    let targetQ = currentQ - i; let targetYear = now.getFullYear();
+                    while(targetQ < 0) { targetQ += 4; targetYear--; }
+                    const startMonth = targetQ * 3; const endMonth = startMonth + 2;
+                    const lastDay = new Date(targetYear, endMonth + 1, 0).getDate();
+                    const start = new Date(targetYear, startMonth, 1, 0, 0, 0);
+                    const end = new Date(targetYear, endMonth, lastDay, 23, 59, 59);
+                    const monthsStr = ['Jan-Mar', 'Apr-Jun', 'Jul-Sep', 'Okt-Des'];
+                    const label = `Q${targetQ + 1} ${targetYear} (${monthsStr[targetQ]})`;
+                    rowsData.push({ label, ...getStats(start, end), saldo: getSaldoUpTo(end) });
+                }
+            } else if (period === 'tahunan') {
+                for(let i=0; i<3; i++) {
+                    const targetYear = now.getFullYear() - i;
+                    const start = new Date(targetYear, 0, 1, 0, 0, 0);
+                    const end = new Date(targetYear, 11, 31, 23, 59, 59);
+                    const label = `Tahun ${targetYear}`;
+                    rowsData.push({ label, ...getStats(start, end), saldo: getSaldoUpTo(end) });
+                }
+            }
+
+            // Render Output Array ke HTML Tabel
+            if(rowsData.length === 0 || rowsData.every(r => r.total === 0)) {
+                tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500 italic font-sans text-xs">Belum ada eksekusi trade pada rentang waktu ini.</td></tr>';
+                return;
+            }
+
+            rowsData.forEach((data, index) => {
+                let tpCount = data.win; let slCount = data.loss; let totalEks = data.total;
+                let bersihEks = tpCount - slCount; let netPips = data.pips;
+                
+                let pctAccumulation = (netPips * lotMultiplier / baseCapital) * 100;
+                let netDollarVal = netPips * lotMultiplier;
+                
+                let pctStr = pctAccumulation > 0 ? `+${pctAccumulation.toFixed(2)}%` : `${pctAccumulation.toFixed(2)}%`;
+                let netDollarStr = netDollarVal > 0 ? `+$${netDollarVal.toFixed(2)}` : (netDollarVal < 0 ? `-$${Math.abs(netDollarVal).toFixed(2)}` : `$0.00`);
+                
+                let textColor = netDollarVal > 0 ? 'text-emerald-600' : (netDollarVal < 0 ? 'text-rose-600' : 'text-slate-800');
+                let eksColor = bersihEks > 0 ? 'text-emerald-600' : (bersihEks < 0 ? 'text-rose-600' : 'text-slate-800');
+
+                html += `
+                    <tr class="bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <td class="p-3 border border-slate-300">${index + 1}</td>
+                        <td class="p-3 border border-slate-300 font-sans font-semibold text-slate-700 text-left">${data.label}</td>
+                        <td class="p-3 border border-slate-300 font-bold ${textColor}">${pctStr}</td>
+                        <td class="p-3 border border-slate-300 text-black font-bold">${totalEks}</td>
+                        <td class="p-3 border border-slate-300 font-bold"><span class="text-emerald-600">${tpCount} TP</span> / <span class="text-rose-600">${slCount} SL</span></td>
+                        <td class="p-3 border border-slate-300 font-bold ${eksColor}">${bersihEks > 0 ? '+'+bersihEks : bersihEks}</td>
+                        <td class="p-3 border border-slate-300 font-bold ${textColor}">${netDollarStr}</td>
+                        <td class="p-3 border border-slate-300 font-bold ${textColor}">${netDollarStr}</td>
+                        <td class="p-3 border border-slate-300 font-bold text-black">$${data.saldo.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+        
+    </script>
+</body>
+</html>

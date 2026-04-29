@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Akses Terminal | LEODRA Institutional</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Identity API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=Merriweather:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- GLOBAL SETTINGS (Minimalist Soft Light Aesthetic) --- */
+        html { 
+            font-size: 14px; 
+            height: 100%; 
+            background-color: #f8fafc; /* Warna abu muda terang (Slate 50) */
+        }
+        body {
+            /* MENGUBAH FONT UTAMA MENJADI INTER (STANDAR PERUSAHAAN YANG TEGAS) */
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a; /* Teks abu gelap/hitam (Slate 900) */
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        /* MENGECUALIKAN HEADER & FOOTER AGAR TETAP MENGGUNAKAN FONT LAMA */
+        header, footer {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        @media (min-width: 1024px) { 
+            body { 
+                zoom: 0.85; 
+                -moz-transform: scale(0.85);
+                -moz-transform-origin: top center;
+            } 
+        }
+
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-merriweather { font-family: 'Merriweather', serif; }
+
+        /* Buttons - SHARP CORNERS */
+        .btn-black {
+            background-color: #0f172a; /* Tombol kini menjadi hitam/dark blue agar kontras di tema terang */
+            color: #ffffff;
+            border-radius: 0px; 
+            padding: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+        .btn-black:hover { background-color: #1e293b; }
+
+        .btn-social-google {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            border-radius: 0px; 
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background-color: #ffffff;
+            color: #0f172a;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+        }
+        .btn-social-google:hover { background-color: #f1f5f9; }
+
+        .btn-apple {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            border-radius: 0px; 
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background-color: #0f172a;
+            color: #ffffff;
+            cursor: pointer;
+            border: 1px solid #0f172a;
+        }
+        .btn-apple:hover { background-color: #1e293b; }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal-content { background: #ffffff; padding: 2.5rem; border-radius: 1.5rem; width: 90%; max-width: 380px; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid #e2e8f0; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); }
+        .modal-overlay.open .modal-content { transform: scale(1); }
+
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-on-scroll.active { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- Notification Modal -->
+    <div id="messageModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-content text-center text-slate-900 rounded-none border-slate-300">
+            <h3 id="messageModalTitle" class="text-lg font-bold mb-2 uppercase tracking-widest">Notifikasi</h3>
+            <p id="messageModalContent" class="text-slate-500 mb-6 text-sm"></p>
+            <button onclick="closeMessageModal()" class="btn-black w-full rounded-none">Tutup</button>
+        </div>
+    </div>
+
+    <!-- LOGOUT Modal -->
+    <div id="logoutModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-content text-center bg-white p-8 border border-slate-200 rounded-none shadow-2xl max-w-sm w-full transform scale-95 transition-transform duration-300">
+            <div class="mx-auto w-12 h-12 bg-slate-100 flex items-center justify-center mb-6 border border-slate-200 rounded-none">
+                <i data-lucide="log-out" class="w-5 h-5 text-slate-900"></i>
+            </div>
+            <h3 class="text-base font-bold mb-2 text-slate-900 uppercase tracking-widest">Konfirmasi Keluar</h3>
+            <p class="text-slate-500 mb-8 text-[11px] leading-relaxed font-medium uppercase tracking-wide">Apakah Anda yakin ingin mengakhiri sesi dan menutup akses ke terminal?</p>
+            <div class="flex gap-3">
+                <button onclick="closeLogoutModal()" class="w-1/2 py-3.5 bg-white border border-slate-300 font-bold text-[10px] uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-black transition-colors rounded-none">Batalkan</button>
+                <button onclick="performLogout()" class="w-1/2 py-3.5 bg-black border border-black text-white font-bold text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-colors rounded-none">Keluar Sesi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 fixed top-0 w-full z-50 transition-all duration-300 h-20 md:h-24">
+        <div class="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+            <div class="flex items-center flex-shrink-0">
+                <span class="font-light text-xl md:text-2xl tracking-widest text-black font-merriweather uppercase">LEODRA</span>
+            </div>
+            <div class="flex items-center justify-end flex-shrink-0 gap-4 md:gap-5">
+                <span id="headerRealTimeDate" class="text-black font-medium text-xs sm:text-sm tracking-wide">
+                    Memuat tanggal...
+                </span>
+                <a href="index.html" class="text-black hover:text-gray-500 transition-colors" title="Kembali ke Beranda">
+                    <i data-lucide="arrow-left" class="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WRAPPER -->
+    <div id="main-wrapper" class="w-full flex-grow flex flex-col pt-16 md:pt-20">
+        
+        <!-- SECTION 1: LOGIN AREA -->
+        <section class="min-h-[85vh] flex flex-col items-center justify-center p-6 relative overflow-hidden bg-white border-b border-slate-100">
+            <div class="w-full max-w-[450px] text-center reveal-on-scroll active">
+                <div class="mb-10">
+                    <div class="h-3 sm:h-4 mb-4 block"></div>
+                    
+                    <h1 class="text-3xl md:text-4xl font-normal text-slate-900 mb-4 leading-tight tracking-wide font-sans">Selamat Datang!</h1>
+                    
+                    <p class="text-slate-500 text-xs md:text-sm font-medium leading-relaxed max-w-sm mx-auto">
+                        Otorisasi identitas Anda untuk sinkronisasi dengan ekosistem perdagangan LEODRA.
+                    </p>
+                </div>
+
+                <div id="login-view" class="w-full max-w-[360px] mx-auto bg-white border border-slate-200 border-t-4 border-t-slate-900 p-8 pb-12 shadow-xl rounded-none transition-all duration-500 flex flex-col min-h-[420px]">
+                    
+                    <!-- Teks LEODRA diletakkan di posisi atas menggantikan teks lama -->
+                    <p class="text-[11px] text-slate-500 mt-4 mb-auto font-bold uppercase tracking-[0.2em] leading-relaxed text-center font-merriweather">LEODRA</p>
+
+                    <div class="w-full mt-auto">
+                        <!-- Teks Deskripsi dipindah tepat di atas garis horizontal tab -->
+                        <p id="auth-tab-description" class="text-[11px] text-slate-500 mb-4 font-medium uppercase tracking-wide leading-relaxed text-center">Pilih metode masuk untuk melanjutkan ke sesi Anda.</p>
+                        
+                        <div class="flex border-t border-slate-200 mb-5 relative">
+                            <button class="flex-1 pt-4 text-[11px] font-bold text-black border-t-2 border-black focus:outline-none transition-colors uppercase tracking-widest -mt-[1px]" onclick="switchAuthTab('login', this)">Login</button>
+                            <button class="flex-1 pt-4 text-[11px] font-bold text-slate-400 border-t-2 border-transparent hover:text-black focus:outline-none transition-colors uppercase tracking-widest -mt-[1px]" onclick="switchAuthTab('register', this)">Daftar</button>
+                        </div>
+
+                        <div class="space-y-4 w-full">
+                            <button onclick="handleRealGoogleLogin()" class="btn-social-google w-full shadow-sm hover:shadow-md py-4 border-slate-300">
+                                <svg class="w-4 h-4 mr-3" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Lanjutkan dengan Google</span>
+                            </button>
+                            <button class="btn-apple w-full shadow-sm hover:shadow-md py-4">
+                                <svg class="w-4 h-4 mr-3 fill-current text-white" viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 43.3-25.6 72.1 27.7 2.4 57.2-12.3 69.5-34.5z"/></svg>
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-white">Sign in with Apple</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="authenticated-view" class="hidden w-full max-w-[360px] mx-auto bg-white border border-slate-200 border-t-4 border-t-slate-900 p-8 pb-12 shadow-xl rounded-none transition-all duration-500 flex flex-col min-h-[420px] justify-center">
+                    
+                    <div class="text-center mb-8 w-full border-b border-slate-100 pb-8 flex-grow flex flex-col justify-center">
+                        <p class="text-[9px] text-emerald-600 font-bold uppercase tracking-[0.2em] mb-5 flex justify-center items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-none animate-pulse"></span> Otorisasi Berhasil
+                        </p>
+                        
+                        <div class="mx-auto w-20 h-20 bg-slate-50 border border-slate-300 p-1 mb-5 shadow-inner rounded-none">
+                            <div id="user-provider-icon" class="w-full h-full bg-slate-200"></div>
+                        </div>
+
+                        <h2 id="user-name-display" class="text-sm font-bold text-slate-900 mb-1 uppercase tracking-widest">NAMA PENGGUNA</h2>
+                        <p id="user-email-display" class="text-[10px] text-slate-500 font-semibold tracking-wider">EMAIL@DOMAIN.COM</p>
+                    </div>
+                    
+                    <div class="w-full space-y-4 mt-auto">
+                        <a href="beranda.html" class="btn-black py-4 text-[10px] tracking-widest uppercase shadow-sm hover:shadow-md">Masuk Terminal <i data-lucide="arrow-right" class="ml-2 w-3.5 h-3.5"></i></a>
+                        <button onclick="showLogoutConfirmation()" class="w-full py-4 bg-white border border-slate-300 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-50 hover:text-black transition-colors rounded-none shadow-sm hover:shadow-md">Akhiri Sesi</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: NOTES/KETERANGAN -->
+        <section class="py-24 border-t border-slate-200 bg-white reveal-on-scroll">
+            <div class="max-w-6xl mx-auto px-8 md:px-12 lg:px-20">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+                    <div class="text-left space-y-8">
+                        <div class="w-12 h-[1px] bg-slate-900"></div>
+                        <h2 class="text-3xl md:text-4xl font-light text-slate-900 leading-tight">
+                            Transformasi Finansial <br>
+                            <span class="text-slate-400">Tanpa Ilusi.</span>
+                        </h2>
+                        <div class="space-y-6 text-slate-600 text-sm md:text-base leading-relaxed font-light">
+                            <p>Mayoritas kegagalan di pasar finansial terjadi bukan karena kurangnya kecerdasan, melainkan karena keputusan yang didorong oleh emosi sesaat. Tanpa sistem yang terukur, Anda tidak sedang berinvestasi, Anda sedang bertaruh.</p>
+                            <div class="border-l border-slate-300 pl-6">
+                                <p class="text-slate-900 font-medium">LEODRA hadir untuk menghentikan kebiasaan spekulatif Anda melalui transparansi data yang absolut.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 p-10 relative shadow-sm">
+                        <i data-lucide="quote" class="w-8 h-8 text-slate-300 absolute top-6 left-6"></i>
+                        <div class="relative z-10 pt-4 text-center lg:text-left">
+                            <p class="text-lg md:text-xl font-light text-slate-700 leading-relaxed mb-8">
+                                "Pasar finansial adalah sebuah perangkat yang dirancang untuk memindahkan uang dari orang yang tidak sabar kepada mereka yang sabar."
+                            </p>
+                            <div class="flex items-center gap-4 justify-center lg:justify-start">
+                                <div class="w-10 h-[1px] bg-slate-300"></div>
+                                <div>
+                                    <p class="text-slate-900 text-xs font-bold uppercase tracking-widest">Warren Buffett</p>
+                                    <p class="text-slate-500 text-[10px] uppercase tracking-wider mt-1">Institutional Investor</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="bg-slate-950 text-slate-400 w-full relative z-10 overflow-hidden mt-0 border-t border-slate-900">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-8 mb-10">
+                    
+                    <!-- KIRI: Brand & Deskripsi -->
+                    <div class="col-span-1 sm:col-span-2 md:col-span-4 flex flex-col text-center sm:text-left">
+                        <span class="font-light text-xl md:text-2xl tracking-widest text-white font-merriweather block mb-4 uppercase">LEODRA</span>
+                        <p class="text-[11px] md:text-xs text-slate-400 leading-relaxed text-justify sm:text-left pr-0 md:pr-4">
+                            Platform manajemen risiko dan analitik trading profesional. <br class="hidden lg:block mb-2">
+                            <strong class="text-slate-200">Keunggulan Eksklusif:</strong> Satu-satunya layanan dengan integrasi otomatis <strong>Backtest berbasis Excel (TF)</strong>, presisi kustomisasi <em>Take Profit/Risk Ratio</em> dinamis, serta analitik probabilitas performa mendalam yang tidak tersedia pada kalkulator trading konvensional.
+                        </p>
+                    </div>
+
+                    <!-- TENGAH: Menu Navigasi -->
+                    <div class="col-span-1 sm:col-span-2 md:col-span-5 w-full">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 w-full text-center sm:text-left">
+                            
+                            <!-- Kolom 1: Solusi & Bantuan -->
+                            <div class="flex flex-col items-center sm:items-start gap-8">
+                                <div class="flex flex-col items-center sm:items-start w-full">
+                                    <h4 class="text-[10px] font-bold tracking-widest uppercase text-white mb-4 border-b border-slate-800 pb-2 w-full text-center sm:text-left">Solusi</h4>
+                                    <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-medium tracking-wide text-slate-400">
+                                        <a href="belajardanmenghasilkan.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Belajar & Menghasilkan</span></a>
+                                        <a href="untukbisnis.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Untuk Bisnis</span></a>
+                                        <a href="untukpendidikan.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Untuk Pendidikan</span></a>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex flex-col items-center sm:items-start w-full">
+                                    <h4 class="text-[10px] font-bold tracking-widest uppercase text-white mb-4 border-b border-slate-800 pb-2 w-full text-center sm:text-left">Bantuan</h4>
+                                    <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-medium tracking-wide text-slate-400">
+                                        <a href="pusatbantuanumum.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Pusat Bantuan Umum</span></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Kolom 2: Perusahaan -->
+                            <div class="flex flex-col items-center sm:items-start w-full">
+                                <h4 class="text-[10px] font-bold tracking-widest uppercase text-white mb-4 border-b border-slate-800 pb-2 w-full text-center sm:text-left">Perusahaan</h4>
+                                <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-medium tracking-wide text-slate-400">
+                                    <a href="tentangleodra.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Tentang Leodra</span></a>
+                                    <a href="visimisi.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Visi & Misi</span></a>
+                                    <a href="nilainilaileodra.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Nilai - nilai Leodra</span></a>
+                                </div>
+                            </div>
+
+                            <!-- Kolom 3: Utama -->
+                            <div class="flex flex-col items-center sm:items-start w-full col-span-2 sm:col-span-1 mt-6 sm:mt-0">
+                                <h4 class="text-[10px] font-bold tracking-widest uppercase text-white mb-4 border-b border-slate-800 pb-2 w-full text-center sm:text-left">Utama</h4>
+                                <div class="flex flex-col gap-y-3 text-[10px] md:text-[11px] font-medium tracking-wide text-slate-400">
+                                    <a href="index.html" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Home</span></a>
+                                    <a href="index.html#vision" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Prinsip Dasar</span></a>
+                                    <a href="index.html#stats" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Fakta Pasar</span></a>
+                                    <a href="index.html#prob" class="hover:text-white transition-colors flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-slate-600 flex-shrink-0"></i> <span class="text-left">Sistem</span></a>
+                                    
+                                    <a href="login.html" class="text-white flex items-center gap-1.5 justify-center sm:justify-start"><i data-lucide="chevron-right" class="w-3 h-3 text-white flex-shrink-0"></i> <span class="text-left border-b border-white pb-0.5">Daftar</span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KANAN: Terhubung -->
+                    <div class="col-span-1 sm:col-span-2 md:col-span-3 flex flex-col items-center justify-start w-full">
+                        <div class="w-full max-w-[160px]">
+                            <h4 class="text-[10px] font-bold tracking-widest uppercase text-white mb-4 border-b border-slate-800 pb-2 text-center">Terhubung</h4>
+                            <div class="flex flex-col items-center gap-4 w-full justify-center">
+                                <a href="https://instagram.com" target="_blank" class="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors group">
+                                    <span class="text-[10px] md:text-[11px] font-bold tracking-wider uppercase whitespace-nowrap">Instagram</span>
+                                    <i data-lucide="instagram" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110 transition-transform flex-shrink-0"></i>
+                                </a>
+                                <a href="mailto:support@leodra.com" class="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors group" title="Email Support">
+                                    <span class="text-[10px] md:text-[11px] font-bold tracking-wider uppercase whitespace-nowrap">Support</span>
+                                    <i data-lucide="mail" class="w-5 h-5 md:w-4 md:h-4 group-hover:scale-110 transition-transform flex-shrink-0"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian Bawah: Disclaimer & Copyright -->
+                <div class="border-t border-slate-800 pt-6 flex flex-col lg:flex-row justify-between items-center gap-6 text-[9px] md:text-[10px] text-slate-500 text-center lg:text-left">
+                    <div class="max-w-4xl leading-relaxed">
+                        <strong class="text-slate-400">Peringatan Risiko:</strong> Trading pada instrumen keuangan membawa tingkat risiko tinggi. LEODRA adalah alat bantu analisis dan tidak menyediakan saran investasi. 
+                        <span class="inline-block mt-2 lg:mt-0 lg:ml-2">
+                            <a href="#" class="hover:text-white underline transition-colors whitespace-nowrap">Syarat & Ketentuan</a> &bull; 
+                            <a href="#" class="hover:text-white underline transition-colors whitespace-nowrap">Kebijakan Privasi</a>
+                        </span>
+                    </div>
+                    
+                    <div class="flex flex-col items-center lg:items-end gap-2 flex-shrink-0 min-w-max">
+                        <div class="flex items-center gap-3 font-medium tracking-wide">
+                            <span class="flex items-center gap-1.5 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse"></span> Sistem Normal</span>
+                            <span class="text-slate-700">|</span>
+                            <span class="whitespace-nowrap text-slate-400">Versi 1.2.0</span>
+                        </div>
+                        <p class="whitespace-nowrap">&copy; 2026 LEODRA Analytics. Hak Cipta Dilindungi.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- LOGIKA JAVASCRIPT -->
+    <script>
+        const GOOGLE_CLIENT_ID = "978765192475-ei64dtk50k39agto3g9b70blg41av878.apps.googleusercontent.com";
+        let tokenClient;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.lucide) window.lucide.createIcons();
+            
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            updateUIState();
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('active');
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateEl = document.getElementById("headerRealTimeDate");
+            if(dateEl) {
+                dateEl.textContent = now.toLocaleDateString("id-ID", { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+            }
+        }
+
+        window.handleRealGoogleLogin = () => { 
+            if (typeof google === 'undefined' || !google.accounts) {
+                openMessageModal("Sistem otentikasi Google sedang memuat, silakan coba beberapa detik lagi.");
+                return;
+            }
+
+            if (!tokenClient) {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: GOOGLE_CLIENT_ID,
+                    scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+                    callback: handleGoogleResponse,
+                });
+            }
+            
+            tokenClient.requestAccessToken({ prompt: 'select_account' }); 
+        };
+
+        window.switchAuthTab = (tabName, btnElement) => {
+            const tabs = btnElement.parentElement.querySelectorAll('button');
+            const desc = document.getElementById('auth-tab-description');
+            
+            tabs.forEach(tab => {
+                tab.className = "flex-1 pt-4 text-[11px] font-bold text-slate-400 border-t-2 border-transparent hover:text-black focus:outline-none transition-colors uppercase tracking-widest -mt-[1px]";
+            });
+            
+            btnElement.className = "flex-1 pt-4 text-[11px] font-bold text-black border-t-2 border-black focus:outline-none transition-colors uppercase tracking-widest -mt-[1px]";
+            
+            if (desc) {
+                if (tabName === 'register') {
+                    desc.textContent = "Pilih metode pendaftaran untuk membuat akun baru.";
+                } else {
+                    desc.textContent = "Pilih metode masuk untuk melanjutkan ke sesi Anda.";
+                }
+            }
+        };
+
+        async function handleGoogleResponse(response) {
+            if (response.error) return;
+            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${response.access_token}` } });
+            const data = await res.json();
+            localStorage.setItem("token", response.access_token);
+            localStorage.setItem("user", JSON.stringify({ email: data.email, name: data.name, picture: data.picture, provider: 'google' }));
+            updateUIState();
+        }
+
+        function updateUIState() {
+            const user = JSON.parse(localStorage.getItem("user"));
+            const loginView = document.getElementById("login-view");
+            const authView = document.getElementById("authenticated-view");
+            if (user) {
+                if(loginView) loginView.classList.add("hidden");
+                if(authView) authView.classList.remove("hidden");
+                document.getElementById("user-name-display").textContent = user.name || user.email;
+                document.getElementById("user-email-display").textContent = user.email;
+                
+                if (user.picture) document.getElementById("user-provider-icon").innerHTML = `<img src="${user.picture}" class="w-full h-full object-cover rounded-none">`;
+            } else {
+                if(loginView) loginView.classList.remove("hidden");
+                if(authView) authView.classList.add("hidden");
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        window.showLogoutConfirmation = () => document.getElementById('logoutModal').classList.add('open');
+        window.closeLogoutModal = () => document.getElementById('logoutModal').classList.remove('open');
+        window.performLogout = () => { localStorage.clear(); location.reload(); };
+        window.closeMessageModal = () => document.getElementById('messageModal').classList.remove('open');
+        function openMessageModal(message) {
+            document.getElementById('messageModalContent').innerText = message;
+            document.getElementById('messageModal').classList.add('open');
+        }
+    </script>
+</body>
+</html>
